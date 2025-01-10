@@ -28,8 +28,10 @@ go.work.sum
 *.example.txt
 
 # Binary
-appliance-installer
-appliance-installer.exe
+infrasonar-cli
+infrasonar-cli.exe
+infrasonar
+infrasonar.exe
 
 # Local Test files
 target/
