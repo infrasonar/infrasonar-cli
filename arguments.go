@@ -13,6 +13,7 @@ import (
 	"github.com/howeyc/gopass"
 )
 
+var reIsUrl = regexp.MustCompile(`^https?://\S+$`)
 var reToken = regexp.MustCompile(`^[0-9a-f]{32}$`)
 var tokenValidation = func(args []string) error {
 	if !reToken.MatchString(args[0]) {
@@ -82,7 +83,7 @@ var optionContainerId = &argparse.Options{
 		}
 		return nil
 	},
-	Help: "Container ID",
+	Help: "Container ID (required)",
 }
 var optionAssetFields = selectorList(
 	false,
@@ -90,10 +91,43 @@ var optionAssetFields = selectorList(
 	"Fields to return. If not specified all fields will be returned",
 )
 
+var optionOutput = &argparse.Options{
+	Required: false,
+	Validate: func(args []string) error {
+		switch args[0] {
+		case "json", "yaml", "simple":
+			return nil
+		}
+
+		return fmt.Errorf("invalid `%s'", args[0])
+	},
+	Default: "yaml",
+	Help:    "Output format. {yaml,json,simple}",
+}
+
 func parseArgs() error {
 	parser := argparse.NewParser("infrasonar", "InfraSonar Client")
 
+	api := parser.String(
+		"",
+		"api",
+		&argparse.Options{
+			Required: false,
+			Validate: func(args []string) error {
+				if !reIsUrl.MatchString(args[0]) {
+					return errors.New("invalid API URL")
+				}
+				return nil
+			},
+			Help:    "Container ID (required)",
+			Default: "https://api.infrasonar.com",
+		},
+	)
+
 	cmdVersion := parser.NewCommand("version", "Print version and exit")
+	cmdShowAssetKinds := parser.NewCommand("show-asset-kinds", "Print all available asset kinds ans exit")
+	showAssetKindsOutput := cmdShowAssetKinds.String("o", "output", optionOutput)
+
 	cmdGetAssets := parser.NewCommand("get-assets", "Get container assets")
 
 	/* required */
@@ -102,6 +136,7 @@ func parseArgs() error {
 	/* optional */
 	getAssetsToken := cmdGetAssets.String("t", "token", optionToken)
 	getAssetsFields := cmdGetAssets.String("f", "fields", optionAssetFields)
+	getAssetsFilterKind := cmdGetAssets.String("k", "kind", optionAssetFields)
 
 	// Parse input
 	err := parser.Parse(os.Args)
@@ -117,6 +152,11 @@ func parseArgs() error {
 		os.Exit(0)
 	}
 
+	// Pint asset kinds
+	if cmdShowAssetKinds.Happened() {
+		showAssetKinds(*api, *showAssetKindsOutput)
+	}
+
 	if cmdGetAssets.Happened() {
 		token := ensureToken(*getAssetsToken)
 		containerId := *getAssetsContainerId
@@ -125,6 +165,7 @@ func parseArgs() error {
 		fmt.Println(token)
 		fmt.Println(containerId)
 		fmt.Println(fields)
+		fmt.Println(getAssetsFilterKind)
 	}
 
 	return nil

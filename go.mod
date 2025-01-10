@@ -5,6 +5,7 @@ go 1.22.2
 require (
 	github.com/akamensky/argparse v1.4.0
 	github.com/howeyc/gopass v0.0.0-20210920133722-c8aef6fb66ef
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
