@@ -15,18 +15,18 @@ import (
 )
 
 type Config struct {
-	Name   string `yaml:"name"`
-	Token  string `yaml:"token"`
-	Api    string `yaml:"api"`
-	Output string `yaml:"output"`
+	Name     string `yaml:"name"`
+	EncToken string `yaml:"token"`
+	Api      string `yaml:"api"`
+	Output   string `yaml:"output"`
 }
 
 func (c *Config) GetToken() (string, error) {
-	return DecryptAES(c.Token)
+	return DecryptAES(c.EncToken)
 }
 
 func (c *Config) EnsureToken() string {
-	token, err := DecryptAES(c.Token)
+	token, err := DecryptAES(c.EncToken)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Failed to read token from configuration '%s' (error: %s)\n", c.Name, err)
 		os.Exit(1)
@@ -76,15 +76,15 @@ func (c *Configurations) new(name, token, api, output string) (*Config, error) {
 		return nil, fmt.Errorf("configuration '%s' already exists", name)
 	}
 
-	token, err := EncryptAES(token)
+	encToken, err := EncryptAES(token)
 	if err != nil {
 		return nil, err
 	}
 	config := Config{
-		Name:   name,
-		Token:  token,
-		Api:    api,
-		Output: output,
+		Name:     name,
+		EncToken: encToken,
+		Api:      api,
+		Output:   output,
 	}
 	c.Configs = append(c.Configs, config)
 	err = c.write()
