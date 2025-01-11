@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -62,4 +63,15 @@ func exitOutput(out interface{}, output string) {
 	}
 	fmt.Println(out)
 	os.Exit(0)
+}
+
+// Returns the value in the haystack
+func findInCaseI(haystack []string, needle string) *string {
+	n := strings.ToLower(needle)
+	for _, t := range haystack {
+		if strings.ToLower(t) == n {
+			return &t
+		}
+	}
+	return nil
 }
