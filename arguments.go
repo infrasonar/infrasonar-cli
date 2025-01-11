@@ -10,14 +10,13 @@ import (
 	"strings"
 
 	"github.com/akamensky/argparse"
-	"github.com/howeyc/gopass"
 )
 
 var reAssetFilter = regexp.MustCompile(`^(\w+)(\=\=|\!\=)(\w+)$`)
 var reNumber = regexp.MustCompile(`^[0-9]+$`)
 var reIsUrl = regexp.MustCompile(`^https?://\S+$`)
 var reToken = regexp.MustCompile(`^[0-9a-f]{32}$`)
-var reProjectName = regexp.MustCompile(`^[a-zA-Z_]\w*$`)
+var reConfigName = regexp.MustCompile(`^[a-zA-Z_]\w*$`)
 var tokenValidation = func(args []string) error {
 	if !reToken.MatchString(args[0]) {
 		return errors.New("invalid token")
@@ -25,13 +24,11 @@ var tokenValidation = func(args []string) error {
 	return nil
 }
 
-
-
-func ensureToken(token string) string {
-	if reToken.MatchString(token) {
-		return token
+func getOutput(outputArg string, config *Config) string {
+	if outputArg == "" {
+		return config.Output
 	}
-	return askToken()
+	return outputArg
 }
 
 func selectorList(required bool, allowed []string, help string) *argparse.Options {
@@ -62,7 +59,7 @@ var optionToken = &argparse.Options{
 	Help:     "Token for authentication with the InfraSonar API",
 }
 
-var optionContainerId = &argparse.Options{
+var optionContainer = &argparse.Options{
 	Required: false,
 	Validate: func(args []string) error {
 		if containerId, err := strconv.Atoi(args[0]); err == nil {
@@ -131,18 +128,18 @@ var optionOutput = &argparse.Options{
 	Help: "Output format. {yaml,json,simple}",
 }
 
-var optionProjectName = &argparse.Options{
+var optionConfigName = &argparse.Options{
 	Required: false,
 	Validate: func(args []string) error {
-		if !reProjectName.MatchString(args[0]) {
-			return errors.New("invalid project name")
+		if !reConfigName.MatchString(args[0]) {
+			return errors.New("invalid configuration name")
 		}
 		return nil
 	},
-	Help: "Project name",
+	Help: "Configuration name",
 }
 
-var optionProjectNewApi = &argparse.Options{
+var optionConfigNewApi = &argparse.Options{
 	Required: false,
 	Validate: func(args []string) error {
 		if !reIsUrl.MatchString(args[0]) {
@@ -162,28 +159,27 @@ func parseArgs() {
 	 */
 	cmdVersion := parser.NewCommand("version", "Print version and exit")
 	/*
-	 *  CMD: projects
+	 *  CMD: config
 	 */
-	cmdProjects := parser.NewCommand("projects", "Manage projects")
+	cmdConfig := parser.NewCommand("config", "Manage client configurations")
 	/*
-	 *  CMD: projects new
+	 *  CMD: config new
 	 */
-	cmdProjectsNew := cmdProjects.NewCommand("new", "Create a new project")
-	cmdProjectsNewSetName := cmdProjectsNew.String("", "set-name", optionProjectName)
-	cmdProjectsNewSetToken := cmdProjectsNew.String("", "set-token", optionToken)
-	cmdProjectsNewSetApi := cmdProjectsNew.String("", "set-api", optionProjectNewApi)
-	cmdProjectsNewSetOutput := cmdProjectsNew.String("", "set-output", optionDefaultOutput)
-
+	cmdConfigNew := cmdConfig.NewCommand("new", "Create a new client configuration")
+	cmdConfigNewSetName := cmdConfigNew.String("", "set-name", optionConfigName)
+	cmdConfigNewSetToken := cmdConfigNew.String("", "set-token", optionToken)
+	cmdConfigNewSetApi := cmdConfigNew.String("", "set-api", optionConfigNewApi)
+	cmdConfigNewSetOutput := cmdConfigNew.String("", "set-output", optionDefaultOutput)
 	/*
 	 *  CMD: get
 	 */
 	cmdGet := parser.NewCommand("get", "Get InfraSonar data")
+	cmdGetConfig := cmdGet.String("", "config", optionConfigName)
 	/*
 	 *  CMD: get assets
 	 */
 	cmdGetAssets := cmdGet.NewCommand("assets", "Get container assets")
-	cmdGetAssetsContainerId := cmdGetAssets.Int("c", "container-id", optionContainerId)
-	cmdGetAssetsToken := cmdGetAssets.String("t", "token", optionToken)
+	cmdGetAssetsContainer := cmdGetAssets.Int("c", "container", optionContainer)
 	cmdGetAssetsProperties := cmdGetAssets.String("p", "properties", optionAssetProperties)
 	cmdGetAssetsFilter := cmdGetAssets.StringList("f", "filter", optionAssetFilter)
 	cmdGetAssetsOutput := cmdGetAssets.String("o", "output", optionOutput)
@@ -196,27 +192,47 @@ func parseArgs() {
 	// Parse input
 	err := parser.Parse(os.Args)
 	if err != nil {
-		fmt.Print(parser.Usage("HERE!!"))
+		fmt.Print(parser.Usage(nil))
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 
+	// Version does not require configs
 	if cmdVersion.Happened() {
 		handleVersion()
 	}
+
+	// Initialize configurations
+	readConfigurations()
+
+	if cmdConfig.Happened() {
+		if cmdConfigNew.Happened() {
+			handleConfigNew(&TConfigNew{
+				name:   *cmdConfigNewSetName,
+				token:  *cmdConfigNewSetToken,
+				api:    *cmdConfigNewSetApi,
+				output: *cmdConfigNewSetOutput,
+			})
+		}
+	}
+
 	if cmdGet.Happened() {
+		config := configurations.ensureConfig(*cmdGetConfig)
+
+		fmt.Println(config.GetToken())
 		if cmdGetAssets.Happened() {
 			handleGetAssets(&TGetAssets{
-				output:      *cmdGetAssetsOutput,
-				containerId: *cmdGetAssetsContainerId,
-				properties:  strings.Split(*cmdGetAssetsProperties, ","),
-				filters:     *cmdGetAssetsFilter,
+				config:     config,
+				output:     getOutput(*cmdGetAssetsOutput, config),
+				container:  *cmdGetAssetsContainer,
+				properties: strings.Split(*cmdGetAssetsProperties, ","),
+				filters:    *cmdGetAssetsFilter,
 			})
 		}
 		if cmdGetAllAssetKinds.Happened() {
 			handleGetAllAssetKinds(&TGetAllAssetKinds{
-				api:    *api,
-				output: *cmdGetAllAssetKindsOutput,
+				config: config,
+				output: getOutput(*cmdGetAllAssetKindsOutput, config),
 			})
 		}
 	}

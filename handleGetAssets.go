@@ -6,11 +6,11 @@ import (
 )
 
 type TGetAssets struct {
-	project     *Project
-	output      string
-	containerId int
-	properties  []string
-	filters     []string
+	config     *Config
+	output     string
+	container  int
+	properties []string
+	filters    []string
 }
 
 func handleGetAssets(cmd *TGetAssets) {
