@@ -3,8 +3,20 @@ package install
 import (
 	"fmt"
 	"os"
+	"path"
 	"runtime"
 )
+
+func Install() {
+	switch runtime.GOOS {
+	case "linux":
+		instalLinux()
+	default:
+		fmt.Fprintf(os.Stderr, "Install on operation system '%s' not supported\n", runtime.GOOS)
+		os.Exit(1)
+	}
+	os.Exit(0)
+}
 
 func dirExists(path string) bool {
 	if info, err := os.Stat(path); err == nil {
@@ -44,20 +56,22 @@ func instalLinux() {
 			fmt.Fprintf(os.Stderr, "Failed to create '%s': %s\n", fn, err)
 			os.Exit(1)
 		}
+	} else if dirExists("/usr/bin") {
+		fn := "/usr/bin/infrasonar"
+		if err := copyBinFile(os.Args[0], fn); err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to create '%s': %s\n", fn, err)
+			os.Exit(1)
+		}
 	}
 
 	if dirExists(bashCompletionPath) {
-		fmt.Println(bashCompletionPath)
+		fn := path.Join(bashCompletionPath, "infrasonar-prompt")
+		o, err := os.OpenFile(fn, os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to create '%s': %s\n", fn, err)
+			os.Exit(1)
+		}
+		defer o.Close()
+		o.WriteString(bashCompletion)
 	}
-}
-
-func Install() {
-	switch runtime.GOOS {
-	case "linux":
-		instalLinux()
-	default:
-		fmt.Fprintf(os.Stderr, "Install on operation system '%s' not supported\n", runtime.GOOS)
-		os.Exit(1)
-	}
-	os.Exit(0)
 }

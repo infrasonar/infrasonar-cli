@@ -68,6 +68,10 @@ func Write() error {
 	return os.WriteFile(configurationsFn, data, 0644)
 }
 
+func GetConfigs() []*Config {
+	return conf.Configs
+}
+
 func Initialize() {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {

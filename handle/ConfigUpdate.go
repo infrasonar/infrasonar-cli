@@ -39,7 +39,10 @@ func ConfigUpdate(cmd *TConfigUpdate) {
 	}
 
 	if isChanged {
-		conf.Write()
+		if err := conf.Write(); err != nil {
+			fmt.Fprintln(os.Stderr, "failed to write changes")
+			os.Exit(1)
+		}
 		fmt.Println("Changes written")
 	} else {
 		fmt.Println("No changes")

@@ -31,6 +31,10 @@ func main() {
 	// CMD: config
 	cmdConfig := parser.NewCommand("config", "Manage client configurations")
 
+	// CMD: config list
+	cmdConfigList := cmdConfig.NewCommand("list", "List all configurations")
+	cmdConfigListMore := cmdConfigList.Flag("m", "more", options.ConfigListMore)
+
 	// CMD: config new
 	cmdConfigNew := cmdConfig.NewCommand("new", "Create a new client configuration")
 	cmdConfigNewSetName := cmdConfigNew.String("", "set-name", options.ConfigName)
@@ -40,10 +44,10 @@ func main() {
 
 	// CMD: config update
 	cmdConfigUpdate := cmdConfig.NewCommand("update", "Update a client configuration")
-	cmdConfigUpdateName := cmdConfigUpdate.StringPositional(options.ConfigName)
+	cmdConfigUpdateName := cmdConfigUpdate.String("", "config", options.ConfigName)
 	cmdConfigUpdateSetToken := cmdConfigUpdate.String("", "set-token", options.Token)
 	cmdConfigUpdateSetApi := cmdConfigUpdate.String("", "set-api", options.ConfigUpdateApi)
-	cmdConfigUpdateSetOutput := cmdConfigUpdate.String("", "set-output", options.DefaultOutput)
+	cmdConfigUpdateSetOutput := cmdConfigUpdate.String("", "set-output", options.Output)
 
 	// CMD: get
 	cmdGet := parser.NewCommand("get", "Get InfraSonar data")
@@ -83,6 +87,10 @@ func main() {
 
 	// CMD: config
 	if cmdConfig.Happened() {
+		// CMD: config list
+		if cmdConfigList.Happened() {
+			handle.ConfigList(*cmdConfigListMore)
+		}
 
 		// CMD: config new
 		if cmdConfigNew.Happened() {

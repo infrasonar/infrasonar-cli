@@ -40,11 +40,17 @@ var ConfigName = &argparse.Options{
 	Required: false,
 	Validate: func(args []string) error {
 		if !re.ConfigName.MatchString(args[0]) {
+			fmt.Println(args[0])
 			return errors.New("invalid configuration name")
 		}
 		return nil
 	},
 	Help: "Configuration name",
+}
+
+var ConfigListMore = &argparse.Options{
+	Required: false,
+	Help:     "List with more detailed configuration information",
 }
 
 var ConfigNewApi = &argparse.Options{
