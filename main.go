@@ -20,9 +20,16 @@ func getOutput(outputArg string, config *conf.Config) string {
 	return outputArg
 }
 
-func getProperties(properties string) []string {
+func getAssetProperties(properties string) []string {
 	if properties == "" {
 		return cli.AssetProperties
+	}
+	return strings.Split(properties, ",")
+}
+
+func getCollectorProperties(properties string) []string {
+	if properties == "" {
+		return cli.CollectorProperties
 	}
 	return strings.Split(properties, ",")
 }
@@ -77,6 +84,12 @@ func main() {
 	cmdGetAssetsFilter := cmdGetAssets.StringList("f", "filter", options.AssetFilter)
 	cmdGetAssetsOutput := cmdGetAssets.String("o", "output", options.Output)
 	cmdGetAssetsIncludeDefaults := cmdGetAssets.Flag("i", "include-defaults", options.IncludeDefaults)
+
+	// CMD: get collectors
+	cmdGetCollectors := cmdGet.NewCommand("collectors", "Get container collectors")
+	cmdGetCollectorsContainer := cmdGetCollectors.Int("c", "container", options.Container)
+	cmdGetCollectorsProperties := cmdGetCollectors.String("p", "properties", options.CollectorProperties)
+	cmdGetCollectorsOutput := cmdGetCollectors.String("o", "output", options.Output)
 
 	// CMD: get all-asset-kinds
 	cmdGetAllAssetKinds := cmdGet.NewCommand("all-asset-kinds", "Get all available asset kinds")
@@ -153,9 +166,20 @@ func main() {
 				Output:          getOutput(*cmdGetAssetsOutput, config),
 				Container:       *cmdGetAssetsContainer,
 				Asset:           *cmdGetAssetsAsset,
-				Properties:      getProperties(*cmdGetAssetsProperties),
+				Properties:      getAssetProperties(*cmdGetAssetsProperties),
 				Filters:         *cmdGetAssetsFilter,
 				IncludeDefaults: *cmdGetAssetsIncludeDefaults,
+			})
+		}
+
+		// CMD: get collectors
+		if cmdGetCollectors.Happened() {
+			handle.GetCollectors(&handle.TGetCollectors{
+				Api:        config.Api,
+				Token:      config.EnsureToken(),
+				Output:     getOutput(*cmdGetCollectorsOutput, config),
+				Container:  *cmdGetCollectorsContainer,
+				Properties: getCollectorProperties(*cmdGetCollectorsProperties),
 			})
 		}
 

@@ -56,7 +56,7 @@ func GetContainer(api, token string, containerId int) (*cli.Container, error) {
 
 func GetAssets(api, token string, containerId, assetId int, fields, filters []string, withCollectors bool) ([]*cli.AssetApi, error) {
 	if len(fields) == 0 {
-		fields = []string{"id", "name"}
+		fields = []string{"id"}
 	}
 	if assetId != 0 {
 		fields = append(fields, "container")
@@ -113,8 +113,19 @@ func GetAssets(api, token string, containerId, assetId int, fields, filters []st
 	}
 }
 
-func GetCollectors(api, token string, containerId int) ([]*cli.Collector, error) {
-	uri := fmt.Sprintf("%s/container/%d/collectors?field=key&options=key,type,default", api, containerId)
+func GetCollectors(api, token string, containerId int, fields []string, withOptions bool) ([]*cli.Collector, error) {
+	if len(fields) == 0 {
+		fields = []string{"key"}
+	}
+
+	args := strings.Join(fields, ",")
+	args = fmt.Sprintf("?fields=%s", args)
+
+	if withOptions {
+		args += "&options=key,type,default"
+	}
+
+	uri := fmt.Sprintf("%s/container/%d/collectors%s", api, containerId, args)
 	if body, err := httpGetAuth(uri, token); err != nil {
 		return nil, err
 	} else {

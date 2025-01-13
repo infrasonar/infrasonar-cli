@@ -100,7 +100,7 @@ func GetAssets(cmd *TGetAssets) {
 	util.ExitOnErr(err)
 
 	if withCollectors && !cmd.IncludeDefaults {
-		collectors, err := req.GetCollectors(cmd.Api, cmd.Token, container.Id)
+		collectors, err := req.GetCollectors(cmd.Api, cmd.Token, container.Id, []string{"key"}, true)
 		util.ExitOnErr(err)
 		removeDefaults(assets, collectors)
 	}

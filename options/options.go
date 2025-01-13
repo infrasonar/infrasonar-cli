@@ -177,3 +177,9 @@ var AssetProperties = selectorList(
 	cli.AssetProperties,
 	"Asset properties to return. If not specified all properties will be returned",
 )
+
+var CollectorProperties = selectorList(
+	false,
+	cli.CollectorProperties,
+	"Collector properties to return. If not specified all properties will be returned",
+)
