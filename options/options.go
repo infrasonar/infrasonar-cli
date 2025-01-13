@@ -6,6 +6,8 @@ import (
 	"strconv"
 
 	"github.com/akamensky/argparse"
+	"github.com/infrasonar/infrasonar-cli/cli"
+	"github.com/infrasonar/infrasonar-cli/handle/util"
 	"github.com/infrasonar/infrasonar-cli/re"
 )
 
@@ -36,6 +38,11 @@ var Output = &argparse.Options{
 	Help: "Output format. {yaml,json,simple}",
 }
 
+var IncludeDefaults = &argparse.Options{
+	Required: false,
+	Help:     "Include default collector configuration values. By default, values equal to the default are not included",
+}
+
 var ConfigName = &argparse.Options{
 	Required: false,
 	Validate: func(args []string) error {
@@ -46,6 +53,18 @@ var ConfigName = &argparse.Options{
 		return nil
 	},
 	Help: "Configuration name",
+}
+
+var ConfigSetDefault = &argparse.Options{
+	Required: false,
+	Validate: func(args []string) error {
+		if !re.ConfigName.MatchString(args[0]) {
+			fmt.Println(args[0])
+			return errors.New("invalid configuration name")
+		}
+		return nil
+	},
+	Help: "Set default configuration",
 }
 
 var ConfigListMore = &argparse.Options{
@@ -100,15 +119,44 @@ var Container = &argparse.Options{
 	Help: "Container ID",
 }
 
+var Asset = &argparse.Options{
+	Required: false,
+	Validate: func(args []string) error {
+		if containerId, err := strconv.Atoi(args[0]); err == nil {
+			if containerId <= 0 {
+				return errors.New("expecting a value greater than 0")
+			}
+		}
+		return nil
+	},
+	Help: "Asset ID",
+}
+
 var AssetFilter = &argparse.Options{
 	Required: false,
 	Validate: func(args []string) error {
+		seen := map[string]bool{}
 		for _, arg := range args {
 			m := re.AssetFilter.FindStringSubmatch(arg)
+			// Check for filter syntax
 			if m == nil {
-				return fmt.Errorf("invalid '%s'. valid example: -f kind==linux -f collector==snmp -f label!=123 -f zone=0", arg)
+				return fmt.Errorf("invalid '%s'. valid example: -f kind==Linux -f collector==snmp -f label!=123 -f zone=0", arg)
 			}
+
+			// Check for double filters
+			key := fmt.Sprintf("%s%s", m[1], m[2])
+			if _, exists := seen[key]; exists {
+				return fmt.Errorf("double '%s', each filter may only be applied once", key)
+			}
+			seen[key] = true
+
+			// Check for valid filters
 			switch m[1] {
+			case "mode":
+				if util.InSlice([]string{"normal", "maintenance", "disabled"}, m[3]) == nil {
+					return fmt.Errorf("unknown mode '%s'. {normal,maintenance,disabled}", m[3])
+				}
+				continue
 			case "collector", "kind":
 				continue
 			case "label", "zone":
@@ -117,7 +165,7 @@ var AssetFilter = &argparse.Options{
 				}
 				continue
 			}
-			return fmt.Errorf("unknown '%s'. {kind,collector,label}", m[1])
+			return fmt.Errorf("unknown filter '%s'. {collector,kind,label,mode,zone}", m[1])
 		}
 		return nil
 	},
@@ -126,6 +174,6 @@ var AssetFilter = &argparse.Options{
 
 var AssetProperties = selectorList(
 	false,
-	[]string{"id", "name", "kind", "description", "mode", "labels", "collectors", "properties"},
+	cli.AssetProperties,
 	"Asset properties to return. If not specified all properties will be returned",
 )

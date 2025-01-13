@@ -36,6 +36,31 @@ func EnsureConfig(name string) *Config {
 	return config
 }
 
+func Delete(c *Config) {
+	n := []*Config{}
+	for _, other := range conf.Configs {
+		if other != c {
+			n = append(n, other)
+		}
+	}
+	conf.Configs = n
+}
+
+func Default(c *Config) {
+	n := []*Config{}
+	for _, other := range conf.Configs {
+		if other == c {
+			n = append(n, other)
+		}
+	}
+	for _, other := range conf.Configs {
+		if other != c {
+			n = append(n, other)
+		}
+	}
+	conf.Configs = n
+}
+
 func New(name, token, api, output string) (*Config, error) {
 	if conf.get(name) != nil {
 		return nil, fmt.Errorf("configuration '%s' already exists", name)

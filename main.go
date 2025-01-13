@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/akamensky/argparse"
+	"github.com/infrasonar/infrasonar-cli/cli"
 	"github.com/infrasonar/infrasonar-cli/conf"
 	"github.com/infrasonar/infrasonar-cli/handle"
 	"github.com/infrasonar/infrasonar-cli/install"
@@ -17,6 +18,13 @@ func getOutput(outputArg string, config *conf.Config) string {
 		return config.Output
 	}
 	return outputArg
+}
+
+func getProperties(properties string) []string {
+	if properties == "" {
+		return cli.AssetProperties
+	}
+	return strings.Split(properties, ",")
 }
 
 func main() {
@@ -49,6 +57,14 @@ func main() {
 	cmdConfigUpdateSetApi := cmdConfigUpdate.String("", "set-api", options.ConfigUpdateApi)
 	cmdConfigUpdateSetOutput := cmdConfigUpdate.String("", "set-output", options.Output)
 
+	// CMD: config default
+	cmdConfigDefault := cmdConfig.NewCommand("default", "Show the default client configuration")
+	cmdConfigDefaultSet := cmdConfigDefault.String("s", "set", options.ConfigSetDefault)
+
+	// CMD: config delete
+	cmdConfigDelete := cmdConfig.NewCommand("delete", "Delete a client configuration")
+	cmdConfigDeleteName := cmdConfigDelete.String("", "config", options.ConfigName)
+
 	// CMD: get
 	cmdGet := parser.NewCommand("get", "Get InfraSonar data")
 	cmdGetConfig := cmdGet.String("", "config", options.ConfigName)
@@ -56,9 +72,11 @@ func main() {
 	// CMD: get assets
 	cmdGetAssets := cmdGet.NewCommand("assets", "Get container assets")
 	cmdGetAssetsContainer := cmdGetAssets.Int("c", "container", options.Container)
+	cmdGetAssetsAsset := cmdGetAssets.Int("a", "asset", options.Container)
 	cmdGetAssetsProperties := cmdGetAssets.String("p", "properties", options.AssetProperties)
 	cmdGetAssetsFilter := cmdGetAssets.StringList("f", "filter", options.AssetFilter)
 	cmdGetAssetsOutput := cmdGetAssets.String("o", "output", options.Output)
+	cmdGetAssetsIncludeDefaults := cmdGetAssets.Flag("i", "include-defaults", options.IncludeDefaults)
 
 	// CMD: get all-asset-kinds
 	cmdGetAllAssetKinds := cmdGet.NewCommand("all-asset-kinds", "Get all available asset kinds")
@@ -111,6 +129,16 @@ func main() {
 				Output: *cmdConfigUpdateSetOutput,
 			})
 		}
+
+		// CMD: config default
+		if cmdConfigDefault.Happened() {
+			handle.ConfigDefault(*cmdConfigDefaultSet)
+		}
+
+		// CMD: config delete
+		if cmdConfigDelete.Happened() {
+			handle.ConfigDelete(*cmdConfigDeleteName)
+		}
 	}
 
 	// CMD: get
@@ -120,12 +148,14 @@ func main() {
 		// CMD: get assets
 		if cmdGetAssets.Happened() {
 			handle.GetAssets(&handle.TGetAssets{
-				Api:        config.Api,
-				Token:      config.EnsureToken(),
-				Output:     getOutput(*cmdGetAssetsOutput, config),
-				Container:  *cmdGetAssetsContainer,
-				Properties: strings.Split(*cmdGetAssetsProperties, ","),
-				Filters:    *cmdGetAssetsFilter,
+				Api:             config.Api,
+				Token:           config.EnsureToken(),
+				Output:          getOutput(*cmdGetAssetsOutput, config),
+				Container:       *cmdGetAssetsContainer,
+				Asset:           *cmdGetAssetsAsset,
+				Properties:      getProperties(*cmdGetAssetsProperties),
+				Filters:         *cmdGetAssetsFilter,
+				IncludeDefaults: *cmdGetAssetsIncludeDefaults,
 			})
 		}
 
