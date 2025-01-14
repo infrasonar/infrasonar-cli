@@ -12,6 +12,7 @@ type TGetAssets struct {
 	Api             string
 	Token           string
 	Output          string
+	OutFn           string
 	Container       int
 	Asset           int
 	Properties      []string
@@ -93,13 +94,23 @@ func getAssetsCli(assets []*cli.AssetApi, labelMap *cli.LabelMap) []*cli.AssetCl
 	return m
 }
 
-func GetAssets(cmd *TGetAssets) {
+func ensureState(cmd *TGetAssets) *cli.State {
+	state := cli.State{}
+
+	util.Log(cmd.OutFn, "Get container...")
 	container := util.EnsureContainer(cmd.Api, cmd.Token, cmd.Container)
 	withCollectors := util.Itob(util.RemoveFromSlice(&cmd.Properties, "collectors"))
+
+	util.Log(cmd.OutFn, "Get assets...")
 	assets, err := req.GetAssets(cmd.Api, cmd.Token, container.Id, cmd.Asset, cmd.Properties, cmd.Filters, withCollectors)
 	util.ExitOnErr(err)
 
+	util.Log(cmd.OutFn, "Get zones...")
+	zones, err := req.GetZones(cmd.Api, cmd.Token, container.Id)
+	util.ExitOnErr(err)
+
 	if withCollectors && !cmd.IncludeDefaults {
+		util.Log(cmd.OutFn, "Get collector info...")
 		collectors, err := req.GetCollectors(cmd.Api, cmd.Token, container.Id, []string{"key"}, true)
 		util.ExitOnErr(err)
 		removeDefaults(assets, collectors)
@@ -107,13 +118,19 @@ func GetAssets(cmd *TGetAssets) {
 
 	replaceUse(assets)
 
+	util.Log(cmd.OutFn, "Get labels...")
 	labelMap, err := getLabelMap(cmd.Api, cmd.Token, assets)
 	util.ExitOnErr(err)
 
-	state := cli.State{}
 	state.Container = container
 	state.Labels = labelMap.Labels()
+	state.Zones = zones
 	state.Assets = getAssetsCli(assets, labelMap)
 
-	util.ExitOutput(state, cmd.Output)
+	return &state
+}
+
+func GetAssets(cmd *TGetAssets) {
+	state := ensureState(cmd)
+	util.ExitOutput(state, cmd.Output, cmd.OutFn)
 }

@@ -1,10 +1,8 @@
 package handle
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/infrasonar/infrasonar-cli/conf"
+	"github.com/infrasonar/infrasonar-cli/handle/util"
 )
 
 func ConfigDefault(set string) {
@@ -12,12 +10,9 @@ func ConfigDefault(set string) {
 	if set != "" {
 		conf.Default(config)
 		if err := conf.Write(); err != nil {
-			fmt.Fprintln(os.Stderr, "failed to write changes")
-			os.Exit(1)
+			util.ExitErr("failed to write changes")
 		}
-		fmt.Fprintf(os.Stderr, "Default configuration: %s\n", config.Name)
-		os.Exit(0)
+		util.ExitOk("Default configuration: %s\n", config.Name)
 	}
-	fmt.Println(config.Name)
-	os.Exit(0)
+	util.ExitOk(config.Name)
 }

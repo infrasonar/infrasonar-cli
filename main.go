@@ -9,6 +9,7 @@ import (
 	"github.com/infrasonar/infrasonar-cli/cli"
 	"github.com/infrasonar/infrasonar-cli/conf"
 	"github.com/infrasonar/infrasonar-cli/handle"
+	"github.com/infrasonar/infrasonar-cli/handle/util"
 	"github.com/infrasonar/infrasonar-cli/install"
 	"github.com/infrasonar/infrasonar-cli/options"
 )
@@ -18,6 +19,17 @@ func getOutput(outputArg string, config *conf.Config) string {
 		return config.Output
 	}
 	return outputArg
+}
+
+func testOutputFilename(fn string) error {
+	if fn != "" {
+		fp, err := os.OpenFile(fn, os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			return fmt.Errorf("failed to create outpuf file: %s", err)
+		}
+		fp.Close()
+	}
+	return nil
 }
 
 func getAssetProperties(properties string) []string {
@@ -74,6 +86,8 @@ func main() {
 
 	// CMD: get
 	cmdGet := parser.NewCommand("get", "Get InfraSonar data")
+	cmdGetOutput := cmdGet.String("o", "output", options.Output)
+	cmdGetOutputFilename := cmdGet.String("t", "output-filename", options.OutFileName)
 	cmdGetConfig := cmdGet.String("", "config", options.ConfigName)
 
 	// CMD: get assets
@@ -82,18 +96,23 @@ func main() {
 	cmdGetAssetsAsset := cmdGetAssets.Int("a", "asset", options.Container)
 	cmdGetAssetsProperties := cmdGetAssets.String("p", "properties", options.AssetProperties)
 	cmdGetAssetsFilter := cmdGetAssets.StringList("f", "filter", options.AssetFilter)
-	cmdGetAssetsOutput := cmdGetAssets.String("o", "output", options.Output)
 	cmdGetAssetsIncludeDefaults := cmdGetAssets.Flag("i", "include-defaults", options.IncludeDefaults)
 
 	// CMD: get collectors
 	cmdGetCollectors := cmdGet.NewCommand("collectors", "Get container collectors")
 	cmdGetCollectorsContainer := cmdGetCollectors.Int("c", "container", options.Container)
 	cmdGetCollectorsProperties := cmdGetCollectors.String("p", "properties", options.CollectorProperties)
-	cmdGetCollectorsOutput := cmdGetCollectors.String("o", "output", options.Output)
+	cmdGetCollectorsCollector := cmdGetCollectors.String("k", "collector", options.Collector)
 
 	// CMD: get all-asset-kinds
 	cmdGetAllAssetKinds := cmdGet.NewCommand("all-asset-kinds", "Get all available asset kinds")
-	cmdGetAllAssetKindsOutput := cmdGetAllAssetKinds.String("o", "output", options.Output)
+
+	// CMD: apply
+	cmdApply := parser.NewCommand("apply", "Apply InfraSonar data from YAML or JSON file")
+	cmdApplyConfig := cmdApply.String("", "config", options.ConfigName)
+	cmdApplyFileName := cmdApply.String("f", "filename", options.ApplyFileName)
+	cmdApplyDryRun := cmdApply.Flag("d", "dry-run", options.DryRun)
+	cmdApplyNoRemove := cmdApply.Flag("n", "no-remove", options.NoRemove)
 
 	// Parse input
 	err := parser.Parse(os.Args)
@@ -157,13 +176,17 @@ func main() {
 	// CMD: get
 	if cmdGet.Happened() {
 		config := conf.EnsureConfig(*cmdGetConfig)
+		output := getOutput(*cmdGetOutput, config)
+		outFn := *cmdGetOutputFilename
+		util.ExitOnErr(testOutputFilename(outFn))
 
 		// CMD: get assets
 		if cmdGetAssets.Happened() {
 			handle.GetAssets(&handle.TGetAssets{
 				Api:             config.Api,
 				Token:           config.EnsureToken(),
-				Output:          getOutput(*cmdGetAssetsOutput, config),
+				Output:          output,
+				OutFn:           outFn,
 				Container:       *cmdGetAssetsContainer,
 				Asset:           *cmdGetAssetsAsset,
 				Properties:      getAssetProperties(*cmdGetAssetsProperties),
@@ -177,9 +200,11 @@ func main() {
 			handle.GetCollectors(&handle.TGetCollectors{
 				Api:        config.Api,
 				Token:      config.EnsureToken(),
-				Output:     getOutput(*cmdGetCollectorsOutput, config),
+				Output:     output,
+				OutFn:      outFn,
 				Container:  *cmdGetCollectorsContainer,
 				Properties: getCollectorProperties(*cmdGetCollectorsProperties),
+				Collector:  *cmdGetCollectorsCollector,
 			})
 		}
 
@@ -187,9 +212,25 @@ func main() {
 		if cmdGetAllAssetKinds.Happened() {
 			handle.GetAllAssetKinds(&handle.TGetAllAssetKinds{
 				Api:    config.Api,
-				Output: getOutput(*cmdGetAllAssetKindsOutput, config),
+				Output: output,
+				OutFn:  outFn,
 			})
 		}
+	}
+
+	// CMD: apply
+	if cmdApply.Happened() {
+		config := conf.EnsureConfig(*cmdApplyConfig)
+		api := config.Api
+		token := config.EnsureToken()
+
+		handle.Apply(
+			api,
+			token,
+			*cmdApplyFileName,
+			*cmdApplyDryRun,
+			*cmdApplyNoRemove,
+		)
 	}
 	fmt.Println(parser.Usage(nil))
 }

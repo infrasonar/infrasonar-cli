@@ -1,5 +1,7 @@
 package cli
 
+import "fmt"
+
 type TDisabledChecks struct {
 	Collector string `json:"collector" yaml:"collector"`
 	Check     string `json:"check" yaml:"check"`
@@ -33,4 +35,11 @@ type AssetCli struct {
 	Kind           string            `json:"kind,omitempty" yaml:"kind,omitempty"`
 	DisabledChecks []TDisabledChecks `json:"disabledChecks,omitempty" yaml:"disabledChecks,omitempty"`
 	Collectors     []TCollector      `json:"collectors,omitempty" yaml:"collectors,omitempty"`
+}
+
+func (a *AssetCli) Str() string {
+	if a.Name == "" {
+		return fmt.Sprintf("%d", a.Id)
+	}
+	return a.Name
 }

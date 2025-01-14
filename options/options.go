@@ -3,6 +3,7 @@ package options
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/akamensky/argparse"
@@ -46,7 +47,7 @@ var IncludeDefaults = &argparse.Options{
 var ConfigName = &argparse.Options{
 	Required: false,
 	Validate: func(args []string) error {
-		if !re.ConfigName.MatchString(args[0]) {
+		if !re.MetaKey.MatchString(args[0]) {
 			fmt.Println(args[0])
 			return errors.New("invalid configuration name")
 		}
@@ -55,10 +56,40 @@ var ConfigName = &argparse.Options{
 	Help: "Configuration name",
 }
 
+var ApplyFileName = &argparse.Options{
+	Required: true,
+	Validate: func(args []string) error {
+		fn := args[0]
+		if _, err := os.Stat(fn); errors.Is(err, os.ErrNotExist) {
+			return fmt.Errorf("file does not exist: %s", fn)
+		}
+		_, err := cli.GetJsonOrYaml(fn)
+		return err
+	},
+	Help: "YAML of JSON input filename to apply",
+}
+
+var OutFileName = &argparse.Options{
+	Required: false,
+	Help:     "Write output to this filename",
+}
+
+var Collector = &argparse.Options{
+	Required: false,
+	Validate: func(args []string) error {
+		if !re.MetaKey.MatchString(args[0]) {
+			fmt.Println(args[0])
+			return errors.New("invalid collector key")
+		}
+		return nil
+	},
+	Help: "Collector key",
+}
+
 var ConfigSetDefault = &argparse.Options{
 	Required: false,
 	Validate: func(args []string) error {
-		if !re.ConfigName.MatchString(args[0]) {
+		if !re.MetaKey.MatchString(args[0]) {
 			fmt.Println(args[0])
 			return errors.New("invalid configuration name")
 		}
@@ -130,6 +161,16 @@ var Asset = &argparse.Options{
 		return nil
 	},
 	Help: "Asset ID",
+}
+
+var NoRemove = &argparse.Options{
+	Required: false,
+	Help:     "Only add new labels, collectors, and apply configuration changes. No existing labels or collectors will be removed",
+}
+
+var DryRun = &argparse.Options{
+	Required: false,
+	Help:     "Dry run mode. Simulate the changes that would be made without actually applying them. Displays a list of proposed changes",
 }
 
 var AssetFilter = &argparse.Options{

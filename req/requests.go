@@ -117,6 +117,9 @@ func GetCollectors(api, token string, containerId int, fields []string, withOpti
 	if len(fields) == 0 {
 		fields = []string{"key"}
 	}
+	if len(fields) == 1 && fields[0] != "key" {
+		fields = append(fields, "key")
+	}
 
 	args := strings.Join(fields, ",")
 	args = fmt.Sprintf("?fields=%s", args)
@@ -141,20 +144,31 @@ func GetCollectors(api, token string, containerId int, fields []string, withOpti
 func GetLabels(api, token string, labelIds cli.IntSet) (*cli.LabelMap, error) {
 	labelMap := cli.NewLabelMap()
 	for labelId := range labelIds {
-		uri := fmt.Sprintf("%s/label/%d?fields=name", api, labelId)
+		uri := fmt.Sprintf("%s/label/%d?fields=id,name", api, labelId)
 		if body, err := httpGetAuth(uri, token); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("failed to retrieve label ID %d (%s)", labelId, err)
 		} else {
-			type Tname struct {
-				Name string `json:"name"`
-			}
-			var unpack Tname
-			err := json.Unmarshal(body, &unpack)
+			var label cli.Label
+			err := json.Unmarshal(body, &label)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("failed to unmarshal label ID %d (%s)", labelId, err)
 			}
-			labelMap.Append(labelId, unpack.Name)
+			labelMap.Append(&label)
 		}
 	}
 	return labelMap, nil
+}
+
+func GetZones(api, token string, containerId int) ([]*cli.Zone, error) {
+	uri := fmt.Sprintf("%s/container/%d/zones", api, containerId)
+	if body, err := httpGetAuth(uri, token); err != nil {
+		return nil, err
+	} else {
+		var zones []*cli.Zone
+		err := json.Unmarshal(body, &zones)
+		if err != nil {
+			return nil, err
+		}
+		return zones, nil
+	}
 }

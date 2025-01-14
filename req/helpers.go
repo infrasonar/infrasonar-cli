@@ -5,10 +5,20 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/infrasonar/infrasonar-cli/cli"
 )
 
 func httpGet(url string) ([]byte, error) {
-	resp, err := http.Get(url)
+	client := http.Client{}
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = http.Header{
+		"User-Agent": {fmt.Sprintf("InfraSonarCli/%s", cli.Version)},
+	}
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("request failed: %s", err)
 	}
@@ -26,6 +36,7 @@ func httpGetAuth(url, token string) ([]byte, error) {
 		return nil, err
 	}
 	req.Header = http.Header{
+		"User-Agent":    {fmt.Sprintf("InfraSonarCli/%s", cli.Version)},
 		"Authorization": {fmt.Sprintf("Bearer %s", token)},
 	}
 	resp, err := client.Do(req)

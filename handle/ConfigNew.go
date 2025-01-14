@@ -1,9 +1,6 @@
 package handle
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/infrasonar/infrasonar-cli/conf"
 	"github.com/infrasonar/infrasonar-cli/handle/util"
 )
@@ -24,6 +21,5 @@ func ConfigNew(cmd *TConfigNew) {
 	}
 	config, err := conf.New(cmd.Name, cmd.Token, cmd.Api, cmd.Output)
 	util.ExitOnErr(err)
-	fmt.Printf("Configuration '%s' created\n", config.Name)
-	os.Exit(0)
+	util.ExitOk("Configuration '%s' created\n", config.Name)
 }

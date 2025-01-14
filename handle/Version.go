@@ -3,12 +3,11 @@ package handle
 import (
 	"fmt"
 	"os"
+
+	"github.com/infrasonar/infrasonar-cli/cli"
 )
 
-// Update README.md when upgrading to a new release
-const version = "1.0.0"
-
 func Version() {
-	fmt.Printf("InfraSonar version %s\n", version)
+	fmt.Printf("InfraSonar version %s\n", cli.Version)
 	os.Exit(0)
 }
