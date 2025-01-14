@@ -43,3 +43,14 @@ func (a *AssetCli) Str() string {
 	}
 	return a.Name
 }
+
+func (a *AssetCli) HasLabelId(labelId int, lm *LabelMap) bool {
+	for _, key := range a.Labels {
+		if label := lm.LabelByKey(key); label != nil {
+			if label.Id == labelId {
+				return true
+			}
+		}
+	}
+	return false
+}

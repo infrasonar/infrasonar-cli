@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/fatih/color"
 	"github.com/howeyc/gopass"
@@ -215,5 +216,24 @@ func Itob(i int) bool {
 func Log(outFn string, a ...any) {
 	if outFn != "" {
 		fmt.Println(a...)
+	}
+}
+
+func HumanizeDuration(duration time.Duration) string {
+	seconds := int64(duration.Seconds())
+	minutes := seconds / 60
+	hours := minutes / 60
+	days := hours / 24
+
+	if days > 0 {
+		return fmt.Sprintf("%d day%s", days, Plural(int(days)))
+	} else if hours > 0 {
+		return fmt.Sprintf("%d hour%s", hours, Plural(int(hours)))
+	} else if minutes > 0 {
+		return fmt.Sprintf("%d minute%s", minutes, Plural(int(minutes)))
+	} else if seconds >= 10 {
+		return fmt.Sprintf("%d second%s", seconds, Plural(int(seconds)))
+	} else {
+		return "a few seconds"
 	}
 }

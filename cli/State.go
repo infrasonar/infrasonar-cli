@@ -2,16 +2,20 @@ package cli
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
+	"path"
+	"time"
 
 	"gopkg.in/yaml.v3"
 )
 
 type State struct {
+	Info      *Info             `json:"info,omitempty" yaml:"info,omitempty"`
 	Container *Container        `json:"container" yaml:"container"`
-	Labels    map[string]*Label `json:"labels,omitempty" yaml:"labels,omitempty"`
 	Zones     []*Zone           `json:"zones" yaml:"zones"`
+	Labels    map[string]*Label `json:"labels,omitempty" yaml:"labels,omitempty"`
 	Assets    []*AssetCli       `json:"assets" yaml:"assets"`
 
 	// For internal use only
@@ -46,6 +50,16 @@ func StateFromFile(fn string) (*State, error) {
 	return &state, nil
 }
 
+func StateFromCache(containerId int) *State {
+	cliPath, err := CliPath()
+	if err != nil {
+		return nil
+	}
+	fn := path.Join(cliPath, fmt.Sprintf("cache_%09d.yaml", containerId))
+	state, _ := StateFromFile(fn)
+	return state
+}
+
 func (s *State) makeLabelMap() {
 	lm := NewLabelMap()
 	for key, label := range s.Labels {
@@ -55,11 +69,25 @@ func (s *State) makeLabelMap() {
 	s.labelMap = lm
 }
 
+func (s *State) GetLabelMap() *LabelMap {
+	if s.labelMap == nil {
+		s.makeLabelMap()
+	}
+	return s.labelMap
+}
+
 func (s *State) LabelById(labelId int) *Label {
 	if s.labelMap == nil {
 		s.makeLabelMap()
 	}
 	return s.labelMap.LabelById(labelId)
+}
+
+func (s *State) LabelByKey(key string) *Label {
+	if s.labelMap == nil {
+		s.makeLabelMap()
+	}
+	return s.labelMap.LabelByKey(key)
 }
 
 func (s *State) AssetById(assetId int) *AssetCli {
@@ -78,4 +106,28 @@ func (s *State) ZoneById(zoneId int) *Zone {
 		}
 	}
 	return nil
+}
+
+func (s *State) GetAge() (*time.Duration, error) {
+	if s.Info == nil {
+		return nil, errors.New("no time info for state")
+	}
+	return s.Info.GetAge()
+}
+
+func (s *State) WriteCache() {
+	cliPath, err := CliPath()
+	if err != nil {
+		return
+	}
+	fn := path.Join(cliPath, fmt.Sprintf("cache_%09d.yaml", s.Container.Id))
+	fp, err := os.OpenFile(fn, os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return
+	}
+	defer fp.Close()
+
+	if out, err := json.Marshal(s); err == nil {
+		fmt.Fprintln(fp, string(out[:]))
+	}
 }

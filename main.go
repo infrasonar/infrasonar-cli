@@ -88,7 +88,7 @@ func main() {
 	cmdGet := parser.NewCommand("get", "Get InfraSonar data")
 	cmdGetOutput := cmdGet.String("o", "output", options.Output)
 	cmdGetOutputFilename := cmdGet.String("t", "output-filename", options.OutFileName)
-	cmdGetConfig := cmdGet.String("", "config", options.ConfigName)
+	cmdGetUseConfig := cmdGet.String("u", "use-config", options.UseConfig)
 
 	// CMD: get assets
 	cmdGetAssets := cmdGet.NewCommand("assets", "Get container assets")
@@ -109,10 +109,10 @@ func main() {
 
 	// CMD: apply
 	cmdApply := parser.NewCommand("apply", "Apply InfraSonar data from YAML or JSON file")
-	cmdApplyConfig := cmdApply.String("", "config", options.ConfigName)
 	cmdApplyFileName := cmdApply.String("f", "filename", options.ApplyFileName)
 	cmdApplyDryRun := cmdApply.Flag("d", "dry-run", options.DryRun)
 	cmdApplyNoRemove := cmdApply.Flag("n", "no-remove", options.NoRemove)
+	cmdApplyUseConfig := cmdApply.String("u", "use-config", options.UseConfig)
 
 	// Parse input
 	err := parser.Parse(os.Args)
@@ -133,7 +133,9 @@ func main() {
 	}
 
 	// Initialize configurations
-	conf.Initialize()
+	if err := conf.Initialize(); err != nil {
+		util.ExitOnErr(err)
+	}
 
 	// CMD: config
 	if cmdConfig.Happened() {
@@ -175,7 +177,7 @@ func main() {
 
 	// CMD: get
 	if cmdGet.Happened() {
-		config := conf.EnsureConfig(*cmdGetConfig)
+		config := conf.EnsureConfig(*cmdGetUseConfig)
 		output := getOutput(*cmdGetOutput, config)
 		outFn := *cmdGetOutputFilename
 		util.ExitOnErr(testOutputFilename(outFn))
@@ -220,7 +222,7 @@ func main() {
 
 	// CMD: apply
 	if cmdApply.Happened() {
-		config := conf.EnsureConfig(*cmdApplyConfig)
+		config := conf.EnsureConfig(*cmdApplyUseConfig)
 		api := config.Api
 		token := config.EnsureToken()
 

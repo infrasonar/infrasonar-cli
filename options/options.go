@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/akamensky/argparse"
@@ -54,6 +55,18 @@ var ConfigName = &argparse.Options{
 		return nil
 	},
 	Help: "Configuration name",
+}
+
+var UseConfig = &argparse.Options{
+	Required: false,
+	Validate: func(args []string) error {
+		if !re.MetaKey.MatchString(args[0]) {
+			fmt.Println(args[0])
+			return errors.New("invalid configuration name")
+		}
+		return nil
+	},
+	Help: fmt.Sprintf("Use an alternative configuration. View the default config with: '%s config default'", filepath.Base(os.Args[0])),
 }
 
 var ApplyFileName = &argparse.Options{

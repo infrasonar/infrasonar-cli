@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 
+	"github.com/infrasonar/infrasonar-cli/cli"
 	"gopkg.in/yaml.v3"
 )
 
@@ -23,14 +25,14 @@ func EnsureConfig(name string) *Config {
 	if name == "" {
 		config := Def()
 		if config == nil {
-			fmt.Fprintf(os.Stderr, "It appears no configuration has been set up.\nYou can create a new configuration using this command:\n\n  %s config new\n\n", os.Args[0])
+			fmt.Fprintf(os.Stderr, "It appears no configuration has been set up.\nYou can create a new configuration using this command:\n\n  %s config new\n\n", filepath.Base(os.Args[0]))
 			os.Exit(1)
 		}
 		return config
 	}
 	config := conf.get(name)
 	if config == nil {
-		fmt.Fprintf(os.Stderr, "Configuration '%s' not found. Use this command to list the configurations:\n\n  %s config list\n\n", name, os.Args[0])
+		fmt.Fprintf(os.Stderr, "Configuration '%s' not found. Use this command to list the configurations:\n\n  %s config list\n\n", name, filepath.Base(os.Args[0]))
 		os.Exit(1)
 	}
 	return config
@@ -97,24 +99,24 @@ func GetConfigs() []*Config {
 	return conf.Configs
 }
 
-func Initialize() {
-	homeDir, err := os.UserHomeDir()
+func Initialize() error {
+	cliPath, err := cli.CliPath()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to read home path: %s\n", err)
-		return
+		return err
 	}
-	configurationsFn = path.Join(homeDir, ".infrasonar_cli_configs.yaml")
+
+	configurationsFn = path.Join(cliPath, "configs.yaml")
 	if _, err := os.Stat(configurationsFn); errors.Is(err, os.ErrNotExist) {
-		return
+		return nil // success, just no configuration yet
 	}
 
 	content, err := os.ReadFile(configurationsFn)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to read '%s': %s\n", configurationsFn, err)
-		return
+		return fmt.Errorf("failed to read '%s': %s", configurationsFn, err)
 	}
 	err = yaml.Unmarshal(content, &conf)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to unpack '%s': %s\n", configurationsFn, err)
+		return fmt.Errorf("failed to unpack '%s': %s", configurationsFn, err)
 	}
+	return nil
 }

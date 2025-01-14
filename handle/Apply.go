@@ -11,6 +11,22 @@ import (
 
 type Change struct {
 	info string
+	task any
+}
+
+type TaskCreateZone struct {
+	zone *cli.Zone
+}
+
+func processChanges(api, token string, changes *[]*Change) {
+	n := len(*changes)
+	for i, c := range *changes {
+		fmt.Printf("Processing task %d/%d: %s ...\n", i+1, n, c.info)
+		switch task := c.task.(type) {
+		case TaskCreateZone:
+			fmt.Println(task.zone.Name)
+		}
+	}
 }
 
 func cval(a any) string {
@@ -76,6 +92,7 @@ func ensureChanges(api, token string, noRemove bool, cs, ts *cli.State) []*Chang
 			}
 			changes = append(changes, &Change{
 				info: fmt.Sprintf("Create new zone: %s", cval(tz.Str())),
+				task: TaskCreateZone{zone: tz},
 			})
 		} else {
 			if tz.Name != "" && tz.Name != cz.Name {
@@ -110,9 +127,35 @@ func ensureChanges(api, token string, noRemove bool, cs, ts *cli.State) []*Chang
 			if ca == nil {
 				util.ExitErr("Asset ID %d not found in container '%s'.", ta.Id, cs.Container.Str())
 			}
+			if !noRemove {
+				for _, key := range ca.Labels {
+					if label := cs.LabelByKey(key); label != nil {
+						if !ta.HasLabelId(label.Id, ts.GetLabelMap()) {
+							changes = append(changes, &Change{
+								info: fmt.Sprintf("Delete label '%s' from asset '%s'", cval(label.Str()), cval(ca.Str())),
+							})
+						}
+					}
+				}
+			}
 		}
 	}
 	return changes
+}
+
+func getCacheState(containerId int) *cli.State {
+	state := cli.StateFromCache(containerId)
+	if state != nil {
+		if age, err := state.GetAge(); err == nil {
+			if age.Hours() < 8 {
+				util.Color("A cache for container ID %d was found that is only %s old. Would you like to use it? (yes/no): ", containerId, util.HumanizeDuration(*age))
+				if util.AskForConfirmation() {
+					return state
+				}
+			}
+		}
+	}
+	return nil
 }
 
 func Apply(api, token, filename string, dryRun, noRemove bool) {
@@ -130,18 +173,23 @@ func Apply(api, token, filename string, dryRun, noRemove bool) {
 		util.ExitErr("missing container ID in input file")
 	}
 
-	fmt.Println("Read current state...")
-	cs := ensureState(&TGetAssets{
-		Api:             api,
-		Token:           token,
-		Output:          "",
-		OutFn:           "-", // Force progress output, nothing will be written
-		Container:       ts.Container.Id,
-		Asset:           0,
-		Properties:      cli.AssetProperties,
-		Filters:         []string{},
-		IncludeDefaults: true,
-	})
+	cs := getCacheState(ts.Container.Id)
+
+	if cs == nil {
+		fmt.Println("Read current state...")
+		cs = ensureState(&TGetAssets{
+			Api:             api,
+			Token:           token,
+			Output:          "",
+			OutFn:           "-", // Force progress output, nothing will be written
+			Container:       ts.Container.Id,
+			Asset:           0,
+			Properties:      cli.AssetProperties,
+			Filters:         []string{},
+			IncludeDefaults: true,
+		})
+		cs.WriteCache()
+	}
 
 	changes := ensureChanges(api, token, noRemove, cs, ts)
 	n := len(changes)
@@ -161,6 +209,14 @@ func Apply(api, token, filename string, dryRun, noRemove bool) {
 
 	if dryRun {
 		util.ExitOk("Done. (no changes made)")
+	} else {
+		util.Color("Do you want to apply the change%s? (yes/no): ", util.Plural(n))
+		if util.AskForConfirmation() {
+			fmt.Println("")
+			processChanges(api, token, &changes)
+			fmt.Println("")
+			util.ExitOk("Done.")
+		}
+		util.ExitOk("Cancelled.")
 	}
-	util.ExitOk("Done.")
 }

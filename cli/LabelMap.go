@@ -45,10 +45,17 @@ func (m *LabelMap) Labels() map[string]*Label {
 }
 
 func (m *LabelMap) LabelById(labelId int) *Label {
-	if name, ok := m.reverse[labelId]; ok {
-		if label, ok := m.labels[name]; ok {
+	if key, ok := m.reverse[labelId]; ok {
+		if label, ok := m.labels[key]; ok {
 			return label
 		}
+	}
+	return nil
+}
+
+func (m *LabelMap) LabelByKey(key string) *Label {
+	if label, ok := m.labels[key]; ok {
+		return label
 	}
 	return nil
 }
@@ -58,11 +65,4 @@ func (m *LabelMap) GetName(labelId int) string {
 		return name
 	}
 	return fmt.Sprintf("%d", labelId)
-}
-
-func (m *LabelMap) GetId(name string) int {
-	if label, ok := m.labels[name]; ok {
-		return label.Id
-	}
-	return 0
 }

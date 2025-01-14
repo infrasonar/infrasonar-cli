@@ -96,6 +96,7 @@ func getAssetsCli(assets []*cli.AssetApi, labelMap *cli.LabelMap) []*cli.AssetCl
 
 func ensureState(cmd *TGetAssets) *cli.State {
 	state := cli.State{}
+	state.Info = cli.NewInfo()
 
 	util.Log(cmd.OutFn, "Get container...")
 	container := util.EnsureContainer(cmd.Api, cmd.Token, cmd.Container)

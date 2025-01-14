@@ -1,9 +1,11 @@
 #/usr/bin/env bash
 _infrasonar_completions()
 {
-    local cur="${COMP_WORDS[COMP_CWORD]}"
-    local prev="${COMP_WORDS[COMP_CWORD-1]}"
-    local prevprev="${COMP_WORDS[COMP_CWORD-2]}"
+    local cur prev prevprev opts
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    prevprev="${COMP_WORDS[COMP_CWORD-2]}"
 
     if [[ "${COMP_WORDS[1]}" == "config" ]]; then
         return 0
