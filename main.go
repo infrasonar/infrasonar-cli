@@ -46,6 +46,13 @@ func getCollectorProperties(properties string) []string {
 	return strings.Split(properties, ",")
 }
 
+func getMeProperties(properties string) []string {
+	if properties == "" {
+		return cli.MeProperties
+	}
+	return strings.Split(properties, ",")
+}
+
 func main() {
 	parser := argparse.NewParser("infrasonar", "InfraSonar Client")
 
@@ -104,6 +111,11 @@ func main() {
 	cmdGetCollectorsProperties := cmdGetCollectors.String("p", "properties", options.CollectorProperties)
 	cmdGetCollectorsCollector := cmdGetCollectors.String("k", "collector", options.Collector)
 
+	// CMD: get collectors
+	cmdGetMe := cmdGet.NewCommand("me", "Get token information (permissions and/or token type)")
+	cmdGetMeContainer := cmdGetMe.Int("c", "container", options.Container)
+	cmdGetMeProperties := cmdGetMe.String("p", "properties", options.MeProperties)
+
 	// CMD: get all-asset-kinds
 	cmdGetAllAssetKinds := cmdGet.NewCommand("all-asset-kinds", "Get all available asset kinds")
 
@@ -111,7 +123,7 @@ func main() {
 	cmdApply := parser.NewCommand("apply", "Apply InfraSonar data from YAML or JSON file")
 	cmdApplyFileName := cmdApply.String("f", "filename", options.ApplyFileName)
 	cmdApplyDryRun := cmdApply.Flag("d", "dry-run", options.DryRun)
-	cmdApplyNoRemove := cmdApply.Flag("n", "no-remove", options.NoRemove)
+	cmdApplyPurge := cmdApply.Flag("p", "purge", options.Purge)
 	cmdApplyUseConfig := cmdApply.String("u", "use-config", options.UseConfig)
 
 	// Parse input
@@ -210,6 +222,18 @@ func main() {
 			})
 		}
 
+		// CMD: get me
+		if cmdGetMe.Happened() {
+			handle.GetMe(&handle.TGetMe{
+				Api:        config.Api,
+				Token:      config.EnsureToken(),
+				Output:     output,
+				OutFn:      outFn,
+				Container:  *cmdGetMeContainer,
+				Properties: getMeProperties(*cmdGetMeProperties),
+			})
+		}
+
 		// CMD: get all-asset-kinds
 		if cmdGetAllAssetKinds.Happened() {
 			handle.GetAllAssetKinds(&handle.TGetAllAssetKinds{
@@ -231,7 +255,7 @@ func main() {
 			token,
 			*cmdApplyFileName,
 			*cmdApplyDryRun,
-			*cmdApplyNoRemove,
+			*cmdApplyPurge,
 		)
 	}
 	fmt.Println(parser.Usage(nil))

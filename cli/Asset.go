@@ -26,15 +26,15 @@ type AssetApi struct {
 }
 
 type AssetCli struct {
-	Id             int               `json:"id,omitempty" yaml:"id,omitempty"`
-	Name           string            `json:"name,omitempty" yaml:"name,omitempty"`
-	Zone           *int              `json:"zone,omitempty" yaml:"zone,omitempty"`
-	Labels         []string          `json:"labels,omitempty" yaml:"labels,omitempty"`
-	Description    string            `json:"description,omitempty" yaml:"description,omitempty"`
-	Mode           string            `json:"mode,omitempty" yaml:"mode,omitempty"`
-	Kind           string            `json:"kind,omitempty" yaml:"kind,omitempty"`
-	DisabledChecks []TDisabledChecks `json:"disabledChecks,omitempty" yaml:"disabledChecks,omitempty"`
-	Collectors     []TCollector      `json:"collectors,omitempty" yaml:"collectors,omitempty"`
+	Id             int                `json:"id,omitempty" yaml:"id,omitempty"`
+	Name           string             `json:"name,omitempty" yaml:"name,omitempty"`
+	Zone           *int               `json:"zone,omitempty" yaml:"zone,omitempty"`
+	Labels         *[]string          `json:"labels,omitempty" yaml:"labels,omitempty"`
+	Description    string             `json:"description,omitempty" yaml:"description,omitempty"`
+	Mode           string             `json:"mode,omitempty" yaml:"mode,omitempty"`
+	Kind           string             `json:"kind,omitempty" yaml:"kind,omitempty"`
+	DisabledChecks *[]TDisabledChecks `json:"disabledChecks,omitempty" yaml:"disabledChecks,omitempty"`
+	Collectors     *[]TCollector      `json:"collectors,omitempty" yaml:"collectors,omitempty"`
 }
 
 func (a *AssetCli) Str() string {
@@ -45,7 +45,7 @@ func (a *AssetCli) Str() string {
 }
 
 func (a *AssetCli) HasLabelId(labelId int, lm *LabelMap) bool {
-	for _, key := range a.Labels {
+	for _, key := range *a.Labels {
 		if label := lm.LabelByKey(key); label != nil {
 			if label.Id == labelId {
 				return true
@@ -53,4 +53,16 @@ func (a *AssetCli) HasLabelId(labelId int, lm *LabelMap) bool {
 		}
 	}
 	return false
+}
+
+var DefaultAsset = AssetCli{
+	Id:             0,
+	Name:           "",
+	Zone:           nil,
+	Labels:         nil,
+	Description:    "",
+	Mode:           "normal",
+	Kind:           "Asset",
+	DisabledChecks: nil,
+	Collectors:     nil,
 }

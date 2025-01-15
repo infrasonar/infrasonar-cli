@@ -83,12 +83,12 @@ func getAssetsCli(assets []*cli.AssetApi, labelMap *cli.LabelMap) []*cli.AssetCl
 			Id:             a.Id,
 			Name:           a.Name,
 			Zone:           a.Zone,
-			Labels:         labels,
+			Labels:         &labels,
 			Description:    a.Description,
 			Mode:           a.Mode,
 			Kind:           a.Kind,
-			DisabledChecks: a.DisabledChecks,
-			Collectors:     a.Collectors,
+			DisabledChecks: &a.DisabledChecks,
+			Collectors:     &a.Collectors,
 		})
 	}
 	return m

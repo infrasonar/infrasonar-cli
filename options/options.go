@@ -176,9 +176,9 @@ var Asset = &argparse.Options{
 	Help: "Asset ID",
 }
 
-var NoRemove = &argparse.Options{
+var Purge = &argparse.Options{
 	Required: false,
-	Help:     "Only add new labels, collectors, and apply configuration changes. No existing labels or collectors will be removed",
+	Help:     "Deletes existing labels and collectors if not specified. Without the 'purge' flag, only new labels, collectors, and configuration changes are applied",
 }
 
 var DryRun = &argparse.Options{
@@ -236,4 +236,10 @@ var CollectorProperties = selectorList(
 	false,
 	cli.CollectorProperties,
 	"Collector properties to return. If not specified all properties will be returned",
+)
+
+var MeProperties = selectorList(
+	false,
+	cli.MeProperties,
+	"Info properties to return. If not specified all properties will be returned",
 )

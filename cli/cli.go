@@ -11,12 +11,29 @@ import (
 
 var AssetProperties = []string{"id", "name", "kind", "zone", "description", "mode", "labels", "collectors", "properties"}
 var CollectorProperties = []string{"key", "name", "kind", "info", "minVersion", "checks"}
+var MeProperties = []string{"permissions", "tokenType"}
 var cliPath string
 
 type IntSet map[int]struct{}
 
 func (s IntSet) Set(k int) {
 	s[k] = struct{}{}
+}
+
+func (s IntSet) Has(k int) bool {
+	_, ok := s[k]
+	return ok
+}
+
+type StrSet map[string]struct{}
+
+func (s StrSet) Set(k string) {
+	s[k] = struct{}{}
+}
+
+func (s StrSet) Has(k string) bool {
+	_, ok := s[k]
+	return ok
 }
 
 func GetJsonOrYaml(fn string) (string, error) {

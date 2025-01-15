@@ -131,3 +131,21 @@ func (s *State) WriteCache() {
 		fmt.Fprintln(fp, string(out[:]))
 	}
 }
+
+func (s *State) HasCollector() bool {
+	for _, a := range s.Assets {
+		if a.Collectors != nil && len(*a.Collectors) > 0 {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *State) HasAssetKind() bool {
+	for _, a := range s.Assets {
+		if a.Kind != "" {
+			return true
+		}
+	}
+	return false
+}

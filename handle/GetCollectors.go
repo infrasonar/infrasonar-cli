@@ -24,7 +24,7 @@ type TGetCollectorsOut struct {
 	cmd        *TGetCollectors
 }
 
-func (o *TGetCollectorsOut) Out() interface{} {
+func (o *TGetCollectorsOut) Out() any {
 	if len(o.cmd.Properties) == 1 && o.cmd.Properties[0] == "key" {
 		out := []string{}
 		for _, c := range o.Collectors {

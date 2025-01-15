@@ -219,20 +219,48 @@ func Log(outFn string, a ...any) {
 	}
 }
 
+func TextI(i int) string {
+	switch i {
+	case 0:
+		return "zero"
+	case 1:
+		return "one"
+	case 2:
+		return "two"
+	case 3:
+		return "three"
+	case 4:
+		return "four"
+	case 5:
+		return "five"
+	case 6:
+		return "six"
+	case 7:
+		return "seven"
+	case 8:
+		return "eight"
+	case 9:
+		return "nine"
+	case 10:
+		return "ten"
+	}
+	return fmt.Sprintf("%d", i)
+}
+
 func HumanizeDuration(duration time.Duration) string {
-	seconds := int64(duration.Seconds())
+	seconds := int(duration.Seconds())
 	minutes := seconds / 60
 	hours := minutes / 60
 	days := hours / 24
 
 	if days > 0 {
-		return fmt.Sprintf("%d day%s", days, Plural(int(days)))
+		return fmt.Sprintf("%s day%s", TextI(days), Plural(days))
 	} else if hours > 0 {
-		return fmt.Sprintf("%d hour%s", hours, Plural(int(hours)))
+		return fmt.Sprintf("%s hour%s", TextI(hours), Plural(hours))
 	} else if minutes > 0 {
-		return fmt.Sprintf("%d minute%s", minutes, Plural(int(minutes)))
+		return fmt.Sprintf("%s minute%s", TextI(minutes), Plural(minutes))
 	} else if seconds >= 10 {
-		return fmt.Sprintf("%d second%s", seconds, Plural(int(seconds)))
+		return fmt.Sprintf("%s second%s", TextI(seconds), Plural(seconds))
 	} else {
 		return "a few seconds"
 	}
