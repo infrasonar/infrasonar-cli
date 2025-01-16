@@ -106,6 +106,20 @@ func IsArray(v interface{}) bool {
 	return reflect.TypeOf(v).Kind() == reflect.Array
 }
 
+func IsIntegral(val float64) bool {
+	return val == float64(int(val))
+}
+
+func Short(s string, n int) string {
+	s = strings.ReplaceAll(s, "\r\n", "\n")
+	s = strings.Trim(s, "\n")
+	s = strings.Split(s, "\n")[0]
+	if len(s) <= n {
+		return s
+	}
+	return fmt.Sprintf("%s...", s[:10])
+}
+
 func ExitOutput(out any, output string, outFn string) {
 	Log(outFn, "Write output...")
 	fp := os.Stdout

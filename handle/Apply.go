@@ -2,6 +2,8 @@ package handle
 
 import (
 	"fmt"
+	"reflect"
+	"time"
 
 	"github.com/fatih/color"
 	"github.com/infrasonar/infrasonar-cli/cli"
@@ -27,6 +29,10 @@ type TaskCreateAsset struct {
 	asset *cli.AssetCli
 }
 
+type TaskSetAssetName struct {
+	asset *cli.AssetCli
+}
+
 type TaskSetAssetMode struct {
 	asset *cli.AssetCli
 }
@@ -39,6 +45,15 @@ type TaskSetAssetZone struct {
 	asset *cli.AssetCli
 }
 
+type TaskSetAssetDescription struct {
+	asset *cli.AssetCli
+}
+
+type TaskAddLabelToAsset struct {
+	asset   *cli.AssetCli
+	labelId int
+}
+
 type TaskDeleteLabelFromAsset struct {
 	asset   *cli.AssetCli
 	labelId int
@@ -48,6 +63,23 @@ type TaskEnableAssetCheck struct {
 	asset        *cli.AssetCli
 	collectorKey string
 	checkKey     string
+}
+
+type TaskDisableAssetCheck struct {
+	asset        *cli.AssetCli
+	collectorKey string
+	checkKey     string
+}
+
+type TaskUpsertCollectorToAsset struct {
+	asset        *cli.AssetCli
+	collectorKey string
+	config       map[string]any
+}
+
+type TaskRemoveCollectorFromAsset struct {
+	asset        *cli.AssetCli
+	collectorKey string
 }
 
 func processChanges(api, token string, containerId int, changes *[]*Change) {
@@ -62,16 +94,28 @@ func processChanges(api, token string, containerId int, changes *[]*Change) {
 			err = req.SetCollectorDisplay(api, token, containerId, task.collectorKey, task.display)
 		case TaskCreateAsset:
 			task.asset.Id, err = req.CreateAsset(api, token, containerId, task.asset.Name)
+		case TaskSetAssetName:
+			err = req.SetAssetName(api, token, task.asset.Id, task.asset.Name)
 		case TaskSetAssetMode:
 			err = req.SetAssetMode(api, token, task.asset.Id, task.asset.Mode, nil)
 		case TaskSetAssetKind:
 			err = req.SetAssetKind(api, token, task.asset.Id, task.asset.Kind)
 		case TaskSetAssetZone:
 			err = req.SetAssetZone(api, token, task.asset.Id, *task.asset.Zone)
+		case TaskSetAssetDescription:
+			err = req.SetAssetDescription(api, token, task.asset.Id, task.asset.Description)
+		case TaskAddLabelToAsset:
+			err = req.AddLabelToAsset(api, token, task.asset.Id, task.labelId)
 		case TaskDeleteLabelFromAsset:
 			err = req.DeleteLabelFromAsset(api, token, task.asset.Id, task.labelId)
 		case TaskEnableAssetCheck:
 			err = req.EnableAssetCheck(api, token, task.asset.Id, task.collectorKey, task.checkKey)
+		case TaskDisableAssetCheck:
+			err = req.DisableAssetCheck(api, token, task.asset.Id, task.collectorKey, task.checkKey)
+		case TaskUpsertCollectorToAsset:
+			err = req.UpsertCollectorToAsset(api, token, task.asset.Id, task.collectorKey, task.config)
+		case TaskRemoveCollectorFromAsset:
+			err = req.RemoveCollectorFromAsset(api, token, task.asset.Id, task.collectorKey)
 		}
 		util.ExitOnErr(err)
 	}
@@ -87,31 +131,114 @@ func readLabelChanges(changes *[]*Change, cl, tl *cli.Label) {
 	}
 	if tl.Name != "" && tl.Name != cl.Name {
 		*changes = append(*changes, &Change{
-			info: fmt.Sprintf("Rename label ID %s from '%s' to '%s'", cval(cl.Id), cval(cl.Name), cval(tl.Name)),
-			// TODO: Rename label API
+			info: fmt.Sprintf("Set name for label ID %s to: %s", cval(tl.Id), cval(tl.Name)),
+			// TODO: Set label name API
+		})
+	}
+	if tl.Color != "" && tl.Color != cl.Color {
+		*changes = append(*changes, &Change{
+			info: fmt.Sprintf("Set color for label ID %s to '%s'", cval(tl.Id), cval(tl.Color)),
+			// TODO: Set label description API
+		})
+	}
+	if tl.Description != "" && tl.Description != cl.Description {
+		*changes = append(*changes, &Change{
+			info: fmt.Sprintf("Set description for label ID %s to '%s'", cval(tl.Id), cval(util.Short(tl.Description, 12))),
+			// TODO: Set label description API
 		})
 	}
 }
 
-func assetChanges(changes *[]*Change, purge bool, ca, ta *cli.AssetCli, cs, ts *cli.State) {
+func assetChanges(changes *[]*Change, purge bool, ca, ta *cli.AssetCli, cs, ts *cli.State, cMap map[string]*cli.Collector) {
+	if ta.Name != "" && ca.Name != "" && ta.Name != ca.Name {
+		*changes = append(*changes, &Change{
+			info: fmt.Sprintf("Set name for asset '%s' to: %s", cval(ta.Str()), cval(ta.Name)),
+			task: TaskSetAssetName{asset: ta},
+		})
+	}
 	if ta.Mode != "" && ta.Mode != ca.Mode {
 		*changes = append(*changes, &Change{
-			info: fmt.Sprintf("Set asset mode for asset '%s' to: %s", cval(ta.Str()), cval(ta.Mode)),
+			info: fmt.Sprintf("Set mode for asset '%s' to: %s", cval(ta.Str()), cval(ta.Mode)),
 			task: TaskSetAssetMode{asset: ta},
 		})
 	}
 	if ta.Kind != "" && ta.Kind != ca.Kind {
 		*changes = append(*changes, &Change{
-			info: fmt.Sprintf("Set asset kind for asset '%s' to: %s", cval(ta.Str()), cval(ta.Kind)),
+			info: fmt.Sprintf("Set kind for asset '%s' to: %s", cval(ta.Str()), cval(ta.Kind)),
 			task: TaskSetAssetKind{asset: ta},
 		})
 	}
 	if ta.Zone != nil && (ca.Zone == nil || *ta.Zone != *ca.Zone) {
 		*changes = append(*changes, &Change{
-			info: fmt.Sprintf("Set asset zone for asset '%s' to: %s", cval(ta.Str()), cval(*ta.Zone)),
+			info: fmt.Sprintf("Set zone for asset '%s' to: %s", cval(ta.Str()), cval(*ta.Zone)),
 			task: TaskSetAssetZone{asset: ta},
 		})
 	}
+	if ta.Description != "" && ta.Description != ca.Description {
+		*changes = append(*changes, &Change{
+			info: fmt.Sprintf("Set description for asset '%s' to: %s", cval(ta.Str()), cval(util.Short(ta.Description, 12))),
+			task: TaskSetAssetDescription{asset: ta},
+		})
+	}
+	if ca.Labels != nil && ta.Labels != nil {
+		for _, key := range *ta.Labels {
+			if label := ts.LabelByKey(key); label != nil {
+				if !ca.HasLabelId(label.Id, cs.GetLabelMap()) {
+					*changes = append(*changes, &Change{
+						info: fmt.Sprintf("Add label '%s' to asset '%s'", cval(label.Str()), cval(ta.Str())),
+						task: TaskAddLabelToAsset{asset: ta, labelId: label.Id},
+					})
+				}
+			}
+		}
+	}
+	if ca.DisabledChecks != nil && ta.DisabledChecks != nil {
+		for _, disabledChk := range *ta.DisabledChecks {
+			found := false
+			for _, c := range *ca.DisabledChecks {
+				if c.Collector == disabledChk.Collector && c.Check == disabledChk.Check {
+					found = true
+					break
+				}
+			}
+			if !found {
+				*changes = append(*changes, &Change{
+					info: fmt.Sprintf("Disable collector check '%s/%s' on asset '%s'", cval(disabledChk.Collector), cval(disabledChk.Check), cval(ta.Str())),
+					task: TaskDisableAssetCheck{asset: ta, collectorKey: disabledChk.Collector, checkKey: disabledChk.Check},
+				})
+			}
+		}
+	}
+	if ca.Collectors != nil && ta.Collectors != nil {
+		for _, collector := range *ta.Collectors {
+			var other *cli.TCollector
+			for _, c := range *ca.Collectors {
+				if c.Key == collector.Key {
+					other = &c
+					break
+				}
+			}
+			if other == nil {
+				*changes = append(*changes, &Change{
+					info: fmt.Sprintf("Add collector '%s' to asset '%s'", cval(collector.Key), cval(ta.Str())),
+					task: TaskUpsertCollectorToAsset{asset: ta, collectorKey: collector.Key, config: collector.Config},
+				})
+			} else {
+
+				for k, v := range collector.Config {
+					ov, ok := other.Config[k]
+					if !ok || !reflect.DeepEqual(v, ov) {
+						*changes = append(*changes, &Change{
+							info: fmt.Sprintf("Update collector '%s' configuration for asset '%s'", cval(collector.Key), cval(ta.Str())),
+							task: TaskUpsertCollectorToAsset{asset: ta, collectorKey: collector.Key, config: collector.Config},
+						})
+						break
+					}
+				}
+			}
+		}
+	}
+
 	if purge {
 		if ca.Labels != nil && ta.Labels != nil {
 			for _, key := range *ca.Labels {
@@ -142,7 +269,50 @@ func assetChanges(changes *[]*Change, purge bool, ca, ta *cli.AssetCli, cs, ts *
 				}
 			}
 		}
+		if ca.Collectors != nil && ta.Collectors != nil {
+			for _, collector := range *ca.Collectors {
+				found := false
+				for _, c := range *ta.Collectors {
+					if c.Key == collector.Key {
+						found = true
+						break
+					}
+				}
+				if !found {
+					*changes = append(*changes, &Change{
+						info: fmt.Sprintf("Remove collector '%s' from asset '%s'", cval(collector.Key), cval(ta.Str())),
+						task: TaskRemoveCollectorFromAsset{asset: ta, collectorKey: collector.Key},
+					})
+				}
+			}
+		}
 	}
+}
+
+func ensureCollectors(api, token string, cs, ts *cli.State, cMap map[string]*cli.Collector) []*Change {
+	changes := []*Change{}
+
+	//
+	// Show collectors and sanity check mode and disabled checks
+	//
+	enableCollector := cli.StrSet{}
+	for _, ta := range ts.Assets {
+		if ta.Collectors != nil {
+			for _, c := range *ta.Collectors {
+				if enableCollector.Has(c.Key) {
+					continue
+				}
+				if _, ok := cMap[c.Key]; !ok {
+					changes = append(changes, &Change{
+						info: fmt.Sprintf("Enable collector: %s", cval(c.Key)),
+						task: TaskSetCollectorDisplay{collectorKey: c.Key, display: true},
+					})
+					enableCollector.Set(c.Key)
+				}
+			}
+		}
+	}
+	return changes
 }
 
 func ensureChanges(api, token string, purge bool, cs, ts *cli.State, cMap map[string]*cli.Collector) []*Change {
@@ -189,7 +359,6 @@ func ensureChanges(api, token string, purge bool, cs, ts *cli.State, cMap map[st
 						util.ExitErr("Collector '%s' is not configured for asset '%s', but a disabled check for it exists.", disabledChk.Collector, ta.Str())
 					}
 				}
-
 			}
 		}
 		switch ta.Mode {
@@ -282,13 +451,13 @@ func ensureChanges(api, token string, purge bool, cs, ts *cli.State, cMap map[st
 				info: fmt.Sprintf("Create new asset: %s", cval(ta.Name)),
 				task: TaskCreateAsset{asset: ta},
 			})
-			assetChanges(&changes, purge, &cli.DefaultAsset, ta, cs, ts)
+			assetChanges(&changes, purge, &cli.DefaultAsset, ta, cs, ts, cMap)
 		} else {
 			ca := cs.AssetById(ta.Id)
 			if ca == nil {
 				util.ExitErr("Asset ID %d not found in container '%s'.", ta.Id, cs.Container.Str())
 			}
-			assetChanges(&changes, purge, ca, ta, cs, ts)
+			assetChanges(&changes, purge, ca, ta, cs, ts, cMap)
 		}
 	}
 	return changes
@@ -300,13 +469,9 @@ func getCacheState(containerId int) *cli.State {
 		if age, err := state.GetAge(); err == nil {
 			if age.Hours() < 8 {
 				util.Color("A cache for container ID %d was found that is only %s old. Would you like to use it? (yes/no): ", containerId, util.HumanizeDuration(*age))
-
-				fmt.Println()
-				return state
-				// TODO ask ->
-				// if util.AskForConfirmation() {
-				// 	return state
-				// }
+				if util.AskForConfirmation() {
+					return state
+				}
 			}
 		}
 	}
@@ -356,7 +521,7 @@ func sanityCheckCollectorConfig(ts *cli.State, cMap map[string]*cli.Collector) {
 									util.ExitErr("Collector '%s' on asset '%s' expects a string value for property '%s' but found type %T", collector.Key, asset.Str(), k, v)
 								}
 							case "ListBool", "ListInt", "ListFloat", "ListString":
-								if arr, ok := v.([]interface{}); ok {
+								if arr, ok := v.([]any); ok {
 									switch o.Type {
 									case "ListBool":
 										for _, v := range arr {
@@ -412,6 +577,94 @@ func revertUse(assets []*cli.AssetCli) {
 	}
 }
 
+func ensureNumbersAndDefaults(assets []*cli.AssetCli, cMap map[string]*cli.Collector) {
+	for _, asset := range assets {
+		if asset.Collectors == nil {
+			continue
+		}
+		for _, collector := range *asset.Collectors {
+			if c, ok := cMap[collector.Key]; ok {
+				for k, v := range collector.Config {
+					for _, o := range c.Options {
+						if o.Key == k {
+							switch o.Type {
+							case "Int":
+								if v, ok := v.(float64); ok {
+									if util.IsIntegral(v) {
+										collector.Config[k] = int(v)
+									}
+								}
+							case "Float":
+								if v, ok := v.(int); ok {
+									collector.Config[k] = float64(v)
+								}
+							case "ListInt", "ListFloat":
+								if arr, ok := v.([]any); ok {
+									switch o.Type {
+									case "ListInt":
+										for i, v := range arr {
+											if v, ok := v.(float64); ok {
+												if util.IsIntegral(v) {
+													arr[i] = int(v)
+												}
+											}
+										}
+									case "ListFloat":
+										for i, v := range arr {
+											if v, ok := v.(int); ok {
+												arr[i] = float64(v)
+											}
+										}
+									}
+								}
+							}
+							break
+						}
+					}
+				}
+				for _, o := range c.Options {
+					switch o.Type {
+					case "Int":
+						if v, ok := o.Default.(float64); ok {
+							if util.IsIntegral(v) {
+								o.Default = int(v)
+							}
+						}
+					case "Float":
+						if v, ok := o.Default.(int); ok {
+							o.Default = float64(v)
+						}
+					case "ListInt", "ListFloat":
+						if arr, ok := o.Default.([]any); ok {
+							switch o.Type {
+							case "ListInt":
+								for i, v := range arr {
+									if v, ok := v.(float64); ok {
+										if util.IsIntegral(v) {
+											arr[i] = int(v)
+										}
+									}
+								}
+							case "ListFloat":
+								for i, v := range arr {
+									if v, ok := v.(int); ok {
+										arr[i] = float64(v)
+									}
+								}
+							}
+						}
+					}
+					if collector.Config != nil {
+						if _, ok := collector.Config[o.Key]; !ok {
+							collector.Config[o.Key] = o.Default
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
 func niceAssetKinds(api string, assets []*cli.AssetCli) {
 	kinds, err := req.GetAssetKinds(api)
 	util.ExitOnErr(err)
@@ -427,6 +680,18 @@ func niceAssetKinds(api string, assets []*cli.AssetCli) {
 	}
 }
 
+func updateCollectorMap(api, token string, containerId int, cMap *map[string]*cli.Collector) error {
+	collectors, err := req.GetCollectors(api, token, containerId, []string{"key"}, true)
+	if err != nil {
+		return err
+	}
+
+	for _, c := range collectors {
+		(*cMap)[c.Key] = c
+	}
+	return nil
+}
+
 func Apply(api, token, filename string, dryRun, purge bool) {
 	if dryRun {
 		util.Color(`-----------------------------------------
@@ -440,6 +705,13 @@ func Apply(api, token, filename string, dryRun, purge bool) {
 
 	if ts.Container.Id == 0 {
 		util.ExitErr("missing container ID in input file")
+	}
+
+	if !dryRun {
+		fmt.Println("Check token permissions...")
+		me, err := req.GetMe(api, token, ts.Container.Id)
+		util.ExitOnErr(err)
+		util.ExitOnErr(me.CheckApplyPermissions())
 	}
 
 	cs := getCacheState(ts.Container.Id)
@@ -471,12 +743,33 @@ func Apply(api, token, filename string, dryRun, purge bool) {
 		revertUse(ts.Assets)
 
 		fmt.Println("Read collectors...")
-		collectors, err := req.GetCollectors(api, token, ts.Container.Id, []string{"key"}, true)
-		util.ExitOnErr(err)
+		util.ExitOnErr(updateCollectorMap(api, token, ts.Container.Id, &cMap))
 
-		for _, c := range collectors {
-			cMap[c.Key] = c
+		changes := ensureCollectors(api, token, cs, ts, cMap)
+		n := len(changes)
+		if n > 0 {
+			if dryRun {
+				util.Color("To run a more accurate dry run, %d collector%s need to be enabled. Proceed? (yes/no): ", n, util.Plural(n))
+			} else {
+				util.Color("To continue, %d collector%s must be enabled. Proceed? (yes/no):", n, util.Plural(n))
+			}
+			if util.AskForConfirmation() {
+				ts.ClearCache() // Clear the cache as we're about to make changes
+				fmt.Println("")
+				processChanges(api, token, ts.Container.Id, &changes)
+				fmt.Println("")
+			} else {
+				util.ExitOk("Cancelled.")
+			}
+			// We need this sleep, for the collector changes
+			time.Sleep(1 * time.Second)
+
+			fmt.Println("Read collectors...")
+			util.ExitOnErr(updateCollectorMap(api, token, ts.Container.Id, &cMap))
 		}
+
+		ensureNumbersAndDefaults(cs.Assets, cMap)
+		ensureNumbersAndDefaults(ts.Assets, cMap)
 		sanityCheckCollectorConfig(ts, cMap)
 	}
 
@@ -501,6 +794,7 @@ func Apply(api, token, filename string, dryRun, purge bool) {
 	} else {
 		util.Color("Do you want to apply the change%s? (yes/no): ", util.Plural(n))
 		if util.AskForConfirmation() {
+			ts.ClearCache() // Clear the cache as we're about to make changes
 			fmt.Println("")
 			processChanges(api, token, ts.Container.Id, &changes)
 			fmt.Println("")

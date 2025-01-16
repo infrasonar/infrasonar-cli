@@ -158,7 +158,7 @@ func GetMe(api, token string, containerId int) (*cli.Me, error) {
 func GetLabels(api, token string, labelIds cli.IntSet) (*cli.LabelMap, error) {
 	labelMap := cli.NewLabelMap()
 	for labelId := range labelIds {
-		uri := fmt.Sprintf("%s/label/%d?fields=id,name", api, labelId)
+		uri := fmt.Sprintf("%s/label/%d?fields=id,name,color,description", api, labelId)
 		if body, err := httpAuth("GET", uri, token); err != nil {
 			return nil, fmt.Errorf("failed to retrieve label ID %d (%s)", labelId, err)
 		} else {
@@ -263,6 +263,20 @@ func SetAssetKind(api, token string, assetId int, kind string) error {
 	return nil
 }
 
+func SetAssetName(api, token string, assetId int, name string) error {
+	uri := fmt.Sprintf("%s/asset/%d/name", api, assetId)
+	type t struct {
+		Name string `json:"name"`
+	}
+	data := &t{
+		Name: name,
+	}
+	if _, err := httpJson("PATCH", uri, token, &data); err != nil {
+		return fmt.Errorf("failed to set name '%s' for asset ID %d' (%s)", name, assetId, err)
+	}
+	return nil
+}
+
 func SetAssetMode(api, token string, assetId int, mode string, duration *int) error {
 	uri := fmt.Sprintf("%s/asset/%d/mode", api, assetId)
 	type t struct {
@@ -293,6 +307,28 @@ func SetAssetZone(api, token string, assetId int, zoneId int) error {
 	return nil
 }
 
+func SetAssetDescription(api, token string, assetId int, description string) error {
+	uri := fmt.Sprintf("%s/asset/%d/description", api, assetId)
+	type t struct {
+		Description string `json:"description"`
+	}
+	data := &t{
+		Description: description,
+	}
+	if _, err := httpJson("PATCH", uri, token, &data); err != nil {
+		return fmt.Errorf("failed to change the description for asset ID %d' (%s)", assetId, err)
+	}
+	return nil
+}
+
+func AddLabelToAsset(api, token string, assetId, labelId int) error {
+	uri := fmt.Sprintf("%s/asset/%d/label/%d", api, assetId, labelId)
+	if _, err := httpAuth("PUT", uri, token); err != nil {
+		return fmt.Errorf("failed to add label ID %d to asset ID %d (%s)", labelId, assetId, err)
+	}
+	return nil
+}
+
 func DeleteLabelFromAsset(api, token string, assetId, labelId int) error {
 	uri := fmt.Sprintf("%s/asset/%d/label/%d", api, assetId, labelId)
 	if _, err := httpAuth("DELETE", uri, token); err != nil {
@@ -313,6 +349,28 @@ func DisableAssetCheck(api, token string, assetId int, collectorKey, checkKey st
 	uri := fmt.Sprintf("%s/asset/%d/collector/%s/check/%s", api, assetId, collectorKey, checkKey)
 	if _, err := httpAuth("PUT", uri, token); err != nil {
 		return fmt.Errorf("failed to enable check %s/%s on asset ID %d (%s)", collectorKey, checkKey, assetId, err)
+	}
+	return nil
+}
+
+func UpsertCollectorToAsset(api, token string, assetId int, collectorKey string, config map[string]any) error {
+	uri := fmt.Sprintf("%s/asset/%d/collector/%s", api, assetId, collectorKey)
+	type t struct {
+		Config map[string]any `json:"config,omitempty"`
+	}
+	data := &t{
+		Config: config,
+	}
+	if _, err := httpJson("POST", uri, token, &data); err != nil {
+		return fmt.Errorf("failed to upsert collector '%s' to asset ID %d (%s)", collectorKey, assetId, err)
+	}
+	return nil
+}
+
+func RemoveCollectorFromAsset(api, token string, assetId int, collectorKey string) error {
+	uri := fmt.Sprintf("%s/asset/%d/collector/%s", api, assetId, collectorKey)
+	if _, err := httpAuth("DELETE", uri, token); err != nil {
+		return fmt.Errorf("failed to remove collector '%s' from asset ID %d (%s)", collectorKey, assetId, err)
 	}
 	return nil
 }

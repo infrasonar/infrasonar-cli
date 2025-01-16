@@ -60,6 +60,15 @@ func StateFromCache(containerId int) *State {
 	return state
 }
 
+func (s *State) ClearCache() {
+	cliPath, err := CliPath()
+	if err != nil {
+		return
+	}
+	fn := path.Join(cliPath, fmt.Sprintf("cache_%09d.yaml", s.Container.Id))
+	os.Remove(fn)
+}
+
 func (s *State) makeLabelMap() {
 	lm := NewLabelMap()
 	for key, label := range s.Labels {

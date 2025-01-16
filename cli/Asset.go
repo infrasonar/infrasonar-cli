@@ -55,14 +55,16 @@ func (a *AssetCli) HasLabelId(labelId int, lm *LabelMap) bool {
 	return false
 }
 
+var DefaultZone = 0
+
 var DefaultAsset = AssetCli{
 	Id:             0,
 	Name:           "",
-	Zone:           nil,
-	Labels:         nil,
+	Zone:           &DefaultZone,
+	Labels:         &[]string{},
 	Description:    "",
 	Mode:           "normal",
 	Kind:           "Asset",
-	DisabledChecks: nil,
-	Collectors:     nil,
+	DisabledChecks: &[]TDisabledChecks{},
+	Collectors:     &[]TCollector{},
 }
