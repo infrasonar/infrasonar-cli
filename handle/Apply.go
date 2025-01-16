@@ -224,7 +224,6 @@ func assetChanges(changes *[]*Change, purge bool, ca, ta *cli.AssetCli, cs, ts *
 					task: TaskUpsertCollectorToAsset{asset: ta, collectorKey: collector.Key, config: collector.Config},
 				})
 			} else {
-
 				for k, v := range collector.Config {
 					ov, ok := other.Config[k]
 					if !ok || !reflect.DeepEqual(v, ov) {
