@@ -119,6 +119,9 @@ func main() {
 	// CMD: get all-asset-kinds
 	cmdGetAllAssetKinds := cmdGet.NewCommand("all-asset-kinds", "Get all available asset kinds")
 
+	// CMD: get all-label-colors
+	cmdGetAllLabelColors := cmdGet.NewCommand("all-label-colors", "Get all available label colors")
+
 	// CMD: apply
 	cmdApply := parser.NewCommand("apply", "Apply InfraSonar data from YAML or JSON file")
 	cmdApplyFileName := cmdApply.String("f", "filename", options.ApplyFileName)
@@ -190,8 +193,20 @@ func main() {
 	// CMD: get
 	if cmdGet.Happened() {
 		config := conf.EnsureConfig(*cmdGetUseConfig)
-		output := getOutput(*cmdGetOutput, config)
 		outFn := *cmdGetOutputFilename
+		output := *cmdGetOutput
+		if outFn != "" {
+			o, err := cli.GetJsonOrYaml(outFn)
+			util.ExitOnErr(err)
+			if output == "" || o == output {
+				output = o
+			} else if output != "" {
+				util.ExitErr("output type does not match output file")
+			}
+		} else {
+			output = getOutput(output, config)
+		}
+
 		util.ExitOnErr(testOutputFilename(outFn))
 
 		// CMD: get assets
@@ -236,11 +251,12 @@ func main() {
 
 		// CMD: get all-asset-kinds
 		if cmdGetAllAssetKinds.Happened() {
-			handle.GetAllAssetKinds(&handle.TGetAllAssetKinds{
-				Api:    config.Api,
-				Output: output,
-				OutFn:  outFn,
-			})
+			handle.GetAllAssetKinds(config.Api, output, outFn)
+		}
+
+		// CMD: get all-label-colors
+		if cmdGetAllLabelColors.Happened() {
+			handle.GetAllLabelsColors(config.Api, output, outFn)
 		}
 	}
 

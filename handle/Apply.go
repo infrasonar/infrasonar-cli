@@ -138,7 +138,7 @@ func readLabelChanges(changes *[]*Change, cl, tl *cli.Label) {
 	if tl.Color != "" && tl.Color != cl.Color {
 		*changes = append(*changes, &Change{
 			info: fmt.Sprintf("Set color for label ID %s to '%s'", cval(tl.Id), cval(tl.Color)),
-			// TODO: Set label description API
+			// TODO: Set label color API
 		})
 	}
 	if tl.Description != "" && tl.Description != cl.Description {
@@ -319,12 +319,12 @@ func ensureChanges(api, token string, purge bool, cs, ts *cli.State, cMap map[st
 	//
 	// Container changes
 	//
-	if ts.Container.Name != "" && ts.Container.Name != cs.Container.Name {
-		changes = append(changes, &Change{
-			info: fmt.Sprintf("Rename container ID %s from '%s' to '%s'", cval(cs.Container.Id), cval(cs.Container.Name), cval(ts.Container.Name)),
-			// TODO: Rename container API
-		})
-	}
+	// if ts.Container.Name != "" && ts.Container.Name != cs.Container.Name {
+	// 	changes = append(changes, &Change{
+	// 		info: fmt.Sprintf("Rename container ID %s from '%s' to '%s'", cval(cs.Container.Id), cval(cs.Container.Name), cval(ts.Container.Name)),
+	// 		// TODO: Set name container API
+	// 	})
+	// }
 	//
 	// Show collectors and sanity check mode and disabled checks
 	//

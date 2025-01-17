@@ -20,6 +20,16 @@ func GetAssetKinds(api string) ([]string, error) {
 	}
 }
 
+func GetLabelColors(api string) ([]string, error) {
+	if body, err := httpGet(fmt.Sprintf("%s/label/colors", api)); err != nil {
+		return nil, err
+	} else {
+		var labelColors []string
+		err := json.Unmarshal(body, &labelColors)
+		return labelColors, err
+	}
+}
+
 func GetContainerId(api, token string) (int, error) {
 	uri := fmt.Sprintf("%s/container/id", api)
 	if body, err := httpAuth("GET", uri, token); err != nil {

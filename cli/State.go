@@ -14,7 +14,7 @@ import (
 type State struct {
 	Info      *Info             `json:"info,omitempty" yaml:"info,omitempty"`
 	Container *Container        `json:"container" yaml:"container"`
-	Zones     []*Zone           `json:"zones" yaml:"zones"`
+	Zones     []*Zone           `json:"zones,omitempty" yaml:"zones,omitempty"`
 	Labels    map[string]*Label `json:"labels,omitempty" yaml:"labels,omitempty"`
 	Assets    []*AssetCli       `json:"assets" yaml:"assets"`
 

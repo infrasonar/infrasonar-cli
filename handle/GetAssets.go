@@ -51,7 +51,8 @@ func removeDefaults(assets []*cli.AssetApi, collectors []*cli.Collector) {
 	}
 }
 
-func replaceUse(assets []*cli.AssetApi) {
+func replaceUseAndFilterZones(assets []*cli.AssetApi, zones *[]*cli.Zone) {
+	zmap := cli.IntSet{}
 	for _, asset := range assets {
 		for _, c := range asset.Collectors {
 			if v, ok := c.Config["_use"]; ok {
@@ -59,7 +60,17 @@ func replaceUse(assets []*cli.AssetApi) {
 				c.Config["use"] = v
 			}
 		}
+		if asset.Zone != nil {
+			zmap.Set(*asset.Zone)
+		}
 	}
+	newZones := []*cli.Zone{}
+	for _, zone := range *zones {
+		if zmap.Has(zone.Zone) {
+			newZones = append(newZones, zone)
+		}
+	}
+	*zones = newZones
 }
 
 func getLabelMap(api, token string, assets []*cli.AssetApi) (*cli.LabelMap, error) {
@@ -79,7 +90,7 @@ func getAssetsCli(assets []*cli.AssetApi, labelMap *cli.LabelMap) []*cli.AssetCl
 		for _, labelId := range a.Labels {
 			labels = append(labels, labelMap.GetName(labelId))
 		}
-		m = append(m, &cli.AssetCli{
+		asset := cli.AssetCli{
 			Id:             a.Id,
 			Name:           a.Name,
 			Zone:           a.Zone,
@@ -89,7 +100,17 @@ func getAssetsCli(assets []*cli.AssetApi, labelMap *cli.LabelMap) []*cli.AssetCl
 			Kind:           a.Kind,
 			DisabledChecks: &a.DisabledChecks,
 			Collectors:     &a.Collectors,
-		})
+		}
+		if len(*asset.Labels) == 0 {
+			asset.Labels = nil
+		}
+		if len(*asset.DisabledChecks) == 0 {
+			asset.DisabledChecks = nil
+		}
+		if len(*asset.Collectors) == 0 {
+			asset.Collectors = nil
+		}
+		m = append(m, &asset)
 	}
 	return m
 }
@@ -117,7 +138,7 @@ func ensureState(cmd *TGetAssets) *cli.State {
 		removeDefaults(assets, collectors)
 	}
 
-	replaceUse(assets)
+	replaceUseAndFilterZones(assets, &zones)
 
 	util.Log(cmd.OutFn, "Get labels...")
 	labelMap, err := getLabelMap(cmd.Api, cmd.Token, assets)
