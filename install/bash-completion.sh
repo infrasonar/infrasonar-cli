@@ -8,6 +8,53 @@ _infrasonar_completions()
     prevprev="${COMP_WORDS[COMP_CWORD-2]}"
 
     if [[ "${COMP_WORDS[1]}" == "config" ]]; then
+        if [[ "$COMP_CWORD" == "2" ]]; then
+            # CMD: config
+            local CONFIG_COMPLETES="list new update default delete"
+            COMPREPLY=( $(compgen -W "$CONFIG_COMPLETES" -- ${COMP_WORDS[COMP_CWORD]}) )
+            return 0
+        fi
+
+        if [[ "${COMP_WORDS[2]}" == "list" ]]; then
+            if [[ "$cur" == --* ]]; then
+                local LIST_CONFIG_COMPLETES="--more --help"
+                COMPREPLY=( $(compgen -W "$LIST_CONFIG_COMPLETES" -- ${COMP_WORDS[COMP_CWORD]}) )
+                return 0
+            fi
+        fi
+
+        if [[ "${COMP_WORDS[2]}" == "new" ]]; then
+            if [[ "$cur" == --* ]]; then
+                local NEW_CONFIG_COMPLETES="--set-name --set-token --set-api --set-output --set-default --help"
+                COMPREPLY=( $(compgen -W "$NEW_CONFIG_COMPLETES" -- ${COMP_WORDS[COMP_CWORD]}) )
+                return 0
+            fi
+        fi
+
+        if [[ "${COMP_WORDS[2]}" == "update" ]]; then
+            if [[ "$cur" == --* ]]; then
+                local UPD_CONFIG_COMPLETES="--config --set-token --set-api --set-output --set-default --help"
+                COMPREPLY=( $(compgen -W "$UPD_CONFIG_COMPLETES" -- ${COMP_WORDS[COMP_CWORD]}) )
+                return 0
+            fi
+        fi
+
+        if [[ "${COMP_WORDS[2]}" == "default" ]]; then
+            if [[ "$cur" == --* ]]; then
+                local DEF_CONFIG_COMPLETES="--help"
+                COMPREPLY=( $(compgen -W "$DEF_CONFIG_COMPLETES" -- ${COMP_WORDS[COMP_CWORD]}) )
+                return 0
+            fi
+        fi
+
+        if [[ "${COMP_WORDS[2]}" == "delete" ]]; then
+            if [[ "$cur" == --* ]]; then
+                local DEL_CONFIG_COMPLETES="--config --help"
+                COMPREPLY=( $(compgen -W "$DEL_CONFIG_COMPLETES" -- ${COMP_WORDS[COMP_CWORD]}) )
+                return 0
+            fi
+        fi
+
         return 0
     fi
 
@@ -59,21 +106,12 @@ _infrasonar_completions()
                 return 0
             fi
 
-            # local c_seen=0
-            # # Check if the argument has already been seen
-            # for ((i=1; i<=$COMP_CWORD; i++)); do
-            #     if [[ "${COMP_WORDS[$i]}" == "--container" ]]; then
-            #         c_seen=1
-            #     fi
-            # done
+            if [[ "$cur" == --* ]]; then
+                local GET_ASSETS_COMPLETES="--container --assets --properties --filter --include-defaults --output --target-filename --use-config --help"
+                COMPREPLY=( $(compgen -W "$GET_ASSETS_COMPLETES" -- ${COMP_WORDS[COMP_CWORD]}) )
+                return 0
+            fi
 
-            # CMD: get assets
-            # if [[ $arg_seen -eq 0 ]]; then
-            #     local GET_ASSETS_COMPLETES="--container --properties --filter --output --config"
-            #     COMPREPLY=( $(compgen -W "$GET_ASSETS_COMPLETES" -- ${COMP_WORDS[COMP_CWORD]}) )
-            # fi
-            local GET_ASSETS_COMPLETES="-c --container -a --assets -p --properties -f --filter -i --include-defaults -o --output -t --output-filename -u --use-config"
-            COMPREPLY=( $(compgen -W "$GET_ASSETS_COMPLETES" -- ${COMP_WORDS[COMP_CWORD]}) )
             return 0
         fi
 
@@ -116,8 +154,12 @@ _infrasonar_completions()
             return 0
         fi
 
-        local GET_ASSETS_COMPLETES="-f --filename -d --dry-run -p --purge -u --use-config"
-        COMPREPLY=( $(compgen -W "$GET_ASSETS_COMPLETES" -- ${COMP_WORDS[COMP_CWORD]}) )
+        if [[ "$cur" == --* ]]; then
+            local GET_ASSETS_COMPLETES="--filename --dry-run --purge --use-config --help"
+            COMPREPLY=( $(compgen -W "$GET_ASSETS_COMPLETES" -- ${COMP_WORDS[COMP_CWORD]}) )
+            return 0
+        fi
+
         return 0
     fi
 

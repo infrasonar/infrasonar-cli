@@ -12,6 +12,11 @@ type TCollector struct {
 	Config map[string]any `json:"config,omitempty" yaml:"config,omitempty"`
 }
 
+type TProperty struct {
+	Key   string `json:"key" yaml:"key"`
+	Value any    `json:"value" yaml:"value"`
+}
+
 type AssetApi struct {
 	Id             int               `json:"id"`
 	ContainerId    int               `json:"container"`
@@ -23,6 +28,7 @@ type AssetApi struct {
 	Kind           string            `json:"kind"`
 	DisabledChecks []TDisabledChecks `json:"disabledChecks"`
 	Collectors     []TCollector      `json:"collectors"`
+	Properties     []TProperty       `json:"properties"`
 }
 
 type AssetCli struct {
@@ -35,6 +41,7 @@ type AssetCli struct {
 	Kind           string             `json:"kind,omitempty" yaml:"kind,omitempty"`
 	DisabledChecks *[]TDisabledChecks `json:"disabledChecks,omitempty" yaml:"disabledChecks,omitempty"`
 	Collectors     *[]TCollector      `json:"collectors,omitempty" yaml:"collectors,omitempty"`
+	Properties     *[]TProperty       `json:"properties,omitempty" yaml:"properties,omitempty"`
 }
 
 func (a *AssetCli) Str() string {

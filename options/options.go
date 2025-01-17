@@ -101,14 +101,7 @@ var Collector = &argparse.Options{
 
 var ConfigSetDefault = &argparse.Options{
 	Required: false,
-	Validate: func(args []string) error {
-		if !re.MetaKey.MatchString(args[0]) {
-			fmt.Println(args[0])
-			return errors.New("invalid configuration name")
-		}
-		return nil
-	},
-	Help: "Set default configuration",
+	Help:     "Set as the default configuration",
 }
 
 var ConfigListMore = &argparse.Options{
@@ -229,17 +222,17 @@ var AssetFilter = &argparse.Options{
 var AssetProperties = selectorList(
 	false,
 	cli.AssetProperties,
-	"Asset properties to return. If not specified all properties will be returned",
+	"Asset properties to return (comma-separated). If omitted, all properties will be returned",
 )
 
 var CollectorProperties = selectorList(
 	false,
 	cli.CollectorProperties,
-	"Collector properties to return. If not specified all properties will be returned",
+	"Collector properties to return (comma-separated). If omitted, all properties will be returned",
 )
 
 var MeProperties = selectorList(
 	false,
 	cli.MeProperties,
-	"Info properties to return. If not specified all properties will be returned",
+	"Info properties to return (comma-separated). If omitted, all properties will be returned",
 )

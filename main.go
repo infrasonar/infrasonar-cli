@@ -21,7 +21,7 @@ func getOutput(outputArg string, config *conf.Config) string {
 	return outputArg
 }
 
-func testOutputFilename(fn string) error {
+func testTargetFilename(fn string) error {
 	if fn != "" {
 		fp, err := os.OpenFile(fn, os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
@@ -75,26 +75,27 @@ func main() {
 	cmdConfigNewSetToken := cmdConfigNew.String("", "set-token", options.Token)
 	cmdConfigNewSetApi := cmdConfigNew.String("", "set-api", options.ConfigNewApi)
 	cmdConfigNewSetOutput := cmdConfigNew.String("", "set-output", options.DefaultOutput)
+	cmdConfigNewSetDefault := cmdConfigNew.Flag("", "set-default", options.ConfigSetDefault)
 
 	// CMD: config update
 	cmdConfigUpdate := cmdConfig.NewCommand("update", "Update a client configuration")
-	cmdConfigUpdateName := cmdConfigUpdate.String("", "config", options.ConfigName)
+	cmdConfigUpdateName := cmdConfigUpdate.String("c", "config", options.ConfigName)
 	cmdConfigUpdateSetToken := cmdConfigUpdate.String("", "set-token", options.Token)
 	cmdConfigUpdateSetApi := cmdConfigUpdate.String("", "set-api", options.ConfigUpdateApi)
 	cmdConfigUpdateSetOutput := cmdConfigUpdate.String("", "set-output", options.Output)
+	cmdConfigUpdateSetDefault := cmdConfigUpdate.Flag("", "set-default", options.ConfigSetDefault)
 
 	// CMD: config default
 	cmdConfigDefault := cmdConfig.NewCommand("default", "Show the default client configuration")
-	cmdConfigDefaultSet := cmdConfigDefault.String("s", "set", options.ConfigSetDefault)
 
 	// CMD: config delete
 	cmdConfigDelete := cmdConfig.NewCommand("delete", "Delete a client configuration")
-	cmdConfigDeleteName := cmdConfigDelete.String("", "config", options.ConfigName)
+	cmdConfigDeleteName := cmdConfigDelete.String("c", "config", options.ConfigName)
 
 	// CMD: get
 	cmdGet := parser.NewCommand("get", "Get InfraSonar data")
 	cmdGetOutput := cmdGet.String("o", "output", options.Output)
-	cmdGetOutputFilename := cmdGet.String("t", "output-filename", options.OutFileName)
+	cmdGetTargetFilename := cmdGet.String("t", "target-filename", options.OutFileName)
 	cmdGetUseConfig := cmdGet.String("u", "use-config", options.UseConfig)
 
 	// CMD: get assets
@@ -166,22 +167,24 @@ func main() {
 				Token:  *cmdConfigNewSetToken,
 				Api:    *cmdConfigNewSetApi,
 				Output: *cmdConfigNewSetOutput,
+				SetDefault: *cmdConfigNewSetDefault,
 			})
 		}
 
 		// CMD: config update
 		if cmdConfigUpdate.Happened() {
 			handle.ConfigUpdate(&handle.TConfigUpdate{
-				Name:   *cmdConfigUpdateName,
-				Token:  *cmdConfigUpdateSetToken,
-				Api:    *cmdConfigUpdateSetApi,
-				Output: *cmdConfigUpdateSetOutput,
+				Name:       *cmdConfigUpdateName,
+				Token:      *cmdConfigUpdateSetToken,
+				Api:        *cmdConfigUpdateSetApi,
+				Output:     *cmdConfigUpdateSetOutput,
+				SetDefault: *cmdConfigUpdateSetDefault,
 			})
 		}
 
 		// CMD: config default
 		if cmdConfigDefault.Happened() {
-			handle.ConfigDefault(*cmdConfigDefaultSet)
+			handle.ConfigDefault()
 		}
 
 		// CMD: config delete
@@ -193,7 +196,7 @@ func main() {
 	// CMD: get
 	if cmdGet.Happened() {
 		config := conf.EnsureConfig(*cmdGetUseConfig)
-		outFn := *cmdGetOutputFilename
+		outFn := *cmdGetTargetFilename
 		output := *cmdGetOutput
 		if outFn != "" {
 			o, err := cli.GetJsonOrYaml(outFn)
@@ -207,7 +210,7 @@ func main() {
 			output = getOutput(output, config)
 		}
 
-		util.ExitOnErr(testOutputFilename(outFn))
+		util.ExitOnErr(testTargetFilename(outFn))
 
 		// CMD: get assets
 		if cmdGetAssets.Happened() {

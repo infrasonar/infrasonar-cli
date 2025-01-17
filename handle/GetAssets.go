@@ -100,6 +100,7 @@ func getAssetsCli(assets []*cli.AssetApi, labelMap *cli.LabelMap) []*cli.AssetCl
 			Kind:           a.Kind,
 			DisabledChecks: &a.DisabledChecks,
 			Collectors:     &a.Collectors,
+			Properties:     &a.Properties,
 		}
 		if len(*asset.Labels) == 0 {
 			asset.Labels = nil
@@ -109,6 +110,9 @@ func getAssetsCli(assets []*cli.AssetApi, labelMap *cli.LabelMap) []*cli.AssetCl
 		}
 		if len(*asset.Collectors) == 0 {
 			asset.Collectors = nil
+		}
+		if len(*asset.Properties) == 0 {
+			asset.Properties = nil
 		}
 		m = append(m, &asset)
 	}

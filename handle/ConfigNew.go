@@ -6,10 +6,11 @@ import (
 )
 
 type TConfigNew struct {
-	Name   string
-	Token  string
-	Api    string
-	Output string
+	Name       string
+	Token      string
+	Api        string
+	Output     string
+	SetDefault bool
 }
 
 func ConfigNew(cmd *TConfigNew) {
@@ -20,6 +21,9 @@ func ConfigNew(cmd *TConfigNew) {
 		cmd.Token = util.AskToken()
 	}
 	config, err := conf.New(cmd.Name, cmd.Token, cmd.Api, cmd.Output)
+	if cmd.SetDefault {
+		conf.SetDefault(config)
+	}
 	util.ExitOnErr(err)
 	util.ExitOk("Configuration '%s' created\n", config.Name)
 }

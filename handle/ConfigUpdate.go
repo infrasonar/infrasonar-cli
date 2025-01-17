@@ -9,10 +9,11 @@ import (
 )
 
 type TConfigUpdate struct {
-	Name   string
-	Token  string
-	Api    string
-	Output string
+	Name       string
+	Token      string
+	Api        string
+	Output     string
+	SetDefault bool
 }
 
 func ConfigUpdate(cmd *TConfigUpdate) {
@@ -24,20 +25,20 @@ func ConfigUpdate(cmd *TConfigUpdate) {
 	config := conf.EnsureConfig(cmd.Name)
 	if cmd.Api != "" && config.Api != cmd.Api {
 		config.Api = cmd.Api
-		fmt.Println("API updated")
 		isChanged = true
 	}
 	if cmd.Token != "" {
 		config.EncToken = cmd.Output
-		fmt.Println("Token updated")
 		isChanged = true
 	}
 	if cmd.Output != "" && config.Output != cmd.Output {
 		config.Output = cmd.Output
-		fmt.Println("Default output updated")
 		isChanged = true
 	}
-
+	if cmd.SetDefault && config != conf.Def() {
+		conf.SetDefault(config)
+		isChanged = true
+	}
 	if isChanged {
 		if err := conf.Write(); err != nil {
 			fmt.Fprintln(os.Stderr, "failed to write changes")

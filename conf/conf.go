@@ -48,7 +48,7 @@ func Delete(c *Config) {
 	conf.Configs = n
 }
 
-func Default(c *Config) {
+func SetDefault(c *Config) {
 	n := []*Config{}
 	for _, other := range conf.Configs {
 		if other == c {
