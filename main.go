@@ -93,7 +93,7 @@ func main() {
 	cmdConfigDeleteName := cmdConfigDelete.String("c", "config", options.ConfigName)
 
 	// CMD: get
-	cmdGet := parser.NewCommand("get", "Get InfraSonar data")
+	cmdGet := parser.NewCommand("get", "Read from InfraSonar")
 	cmdGetOutput := cmdGet.String("o", "output", options.Output)
 	cmdGetTargetFilename := cmdGet.String("t", "target-filename", options.OutFileName)
 	cmdGetUseConfig := cmdGet.String("u", "use-config", options.UseConfig)
