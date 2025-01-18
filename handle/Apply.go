@@ -50,13 +50,13 @@ type TaskSetAssetDescription struct {
 }
 
 type TaskAddLabelToAsset struct {
-	asset   *cli.AssetCli
-	labelId int
+	asset *cli.AssetCli
+	label *cli.Label
 }
 
 type TaskDeleteLabelFromAsset struct {
-	asset   *cli.AssetCli
-	labelId int
+	asset *cli.AssetCli
+	label *cli.Label
 }
 
 type TaskEnableAssetCheck struct {
@@ -121,9 +121,9 @@ func processChanges(api, token string, containerId int, changes *[]*Change) {
 		case TaskSetAssetDescription:
 			err = req.SetAssetDescription(api, token, task.asset.Id, task.asset.Description)
 		case TaskAddLabelToAsset:
-			err = req.AddLabelToAsset(api, token, task.asset.Id, task.labelId)
+			err = req.AddLabelToAsset(api, token, task.asset.Id, task.label.Id)
 		case TaskDeleteLabelFromAsset:
-			err = req.DeleteLabelFromAsset(api, token, task.asset.Id, task.labelId)
+			err = req.DeleteLabelFromAsset(api, token, task.asset.Id, task.label.Id)
 		case TaskEnableAssetCheck:
 			err = req.EnableAssetCheck(api, token, task.asset.Id, task.collectorKey, task.checkKey)
 		case TaskDisableAssetCheck:
@@ -139,7 +139,7 @@ func processChanges(api, token string, containerId int, changes *[]*Change) {
 		case TaskSetLabelColor:
 			err = req.SetLabelColor(api, token, task.label.Id, task.label.Color)
 		case TaskSetLabelDescription:
-			err = req.SetAssetKind(api, token, task.label.Id, task.label.Description)
+			err = req.SetLabelDescription(api, token, task.label.Id, task.label.Description)
 
 		}
 		util.ExitOnErr(err)
@@ -211,7 +211,7 @@ func assetChanges(changes *[]*Change, purge bool, ca, ta *cli.AssetCli, cs, ts *
 				if !ca.HasLabelId(label.Id, cs.GetLabelMap()) {
 					*changes = append(*changes, &Change{
 						info: fmt.Sprintf("Add label '%s' to asset '%s'", cval(label.Str()), cval(ta.Str())),
-						task: TaskAddLabelToAsset{asset: ta, labelId: label.Id},
+						task: TaskAddLabelToAsset{asset: ta, label: label},
 					})
 				}
 			}
@@ -270,7 +270,7 @@ func assetChanges(changes *[]*Change, purge bool, ca, ta *cli.AssetCli, cs, ts *
 					if !ta.HasLabelId(label.Id, ts.GetLabelMap()) {
 						*changes = append(*changes, &Change{
 							info: fmt.Sprintf("Delete label '%s' from asset '%s'", cval(label.Str()), cval(ta.Str())),
-							task: TaskDeleteLabelFromAsset{asset: ta, labelId: label.Id},
+							task: TaskDeleteLabelFromAsset{asset: ta, label: label},
 						})
 					}
 				}
