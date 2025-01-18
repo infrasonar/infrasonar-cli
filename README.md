@@ -1,14 +1,18 @@
+[![CI](https://github.com/infrasonar/infrasonar-cli/workflows/CI/badge.svg)](https://github.com/infrasonar/infrasonar-cli/actions)
+[![Release Version](https://img.shields.io/github/release/infrasonar/infrasonar-cli)](https://github.com/infrasonar/infrasonar-cli/releases)
+
+
 # InfraSonar Client
 
 1. Download the client
 **1. Download the latest installer:**
 
-- [Linux (amd64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.1/infrasonar-cli-linux-amd64-1.0.0.tar.gz)
-- [Linux (arm64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.1/infrasonar-cli-linux-arm64-1.0.0.tar.gz)
-- [Darwin (amd64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.1/infrasonar-cli-darwin-amd64-1.0.0.tar.gz)
-- [Darwin (arm64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.1/infrasonar-cli-darwin-arm64-1.0.0.tar.gz)
-- [Windows (amd64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.1/infrasonar-cli-windows-amd64-1.0.0.zip)
-- [Windows (arm64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.1/infrasonar-cli-windows-arm64-1.0.0.zip)
+- [Linux (amd64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.0/infrasonar-cli-linux-amd64-1.0.0.tar.gz)
+- [Linux (arm64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.0/infrasonar-cli-linux-arm64-1.0.0.tar.gz)
+- [Darwin (amd64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.0/infrasonar-cli-darwin-amd64-1.0.0.tar.gz)
+- [Darwin (arm64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.0/infrasonar-cli-darwin-arm64-1.0.0.tar.gz)
+- [Windows (amd64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.0/infrasonar-cli-windows-amd64-1.0.0.zip)
+- [Windows (arm64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.0/infrasonar-cli-windows-arm64-1.0.0.zip)
 
 > If your platform is not listed above, refer to the [build from source](#build-from-source) section for instructions.
 
@@ -30,6 +34,12 @@ sudo ./infrasonar install
 infrasonar config new
 ```
 
+Next, give your configuration a name and provide a token
+
+```
+Name: production
+Token: ***********
+```
 
 ### Build
 ```bash
