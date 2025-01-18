@@ -37,7 +37,7 @@ infrasonar config new
 Next, give your configuration a name and provide a token
 
 ```
-Name: production
+Name: foo
 Token: ***********
 ```
 
