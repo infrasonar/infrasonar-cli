@@ -82,6 +82,22 @@ type TaskRemoveCollectorFromAsset struct {
 	collectorKey string
 }
 
+type TaskCreateLabel struct {
+	label *cli.Label
+}
+
+type TaskSetLabelName struct {
+	label *cli.Label
+}
+
+type TaskSetLabelColor struct {
+	label *cli.Label
+}
+
+type TaskSetLabelDescription struct {
+	label *cli.Label
+}
+
 func processChanges(api, token string, containerId int, changes *[]*Change) {
 	n := len(*changes)
 	for i, c := range *changes {
@@ -116,6 +132,15 @@ func processChanges(api, token string, containerId int, changes *[]*Change) {
 			err = req.UpsertCollectorToAsset(api, token, task.asset.Id, task.collectorKey, task.config)
 		case TaskRemoveCollectorFromAsset:
 			err = req.RemoveCollectorFromAsset(api, token, task.asset.Id, task.collectorKey)
+		case TaskCreateLabel:
+			task.label.Id, err = req.CreateLabel(api, token, containerId, task.label.Name)
+		case TaskSetLabelName:
+			err = req.SetLabelName(api, token, task.label.Id, task.label.Name)
+		case TaskSetLabelColor:
+			err = req.SetLabelColor(api, token, task.label.Id, task.label.Color)
+		case TaskSetLabelDescription:
+			err = req.SetAssetKind(api, token, task.label.Id, task.label.Description)
+
 		}
 		util.ExitOnErr(err)
 	}
@@ -129,27 +154,27 @@ func readLabelChanges(changes *[]*Change, cl, tl *cli.Label) {
 	if cl.Id != tl.Id {
 		panic("label ID mismatch")
 	}
-	if tl.Name != "" && tl.Name != cl.Name {
+	if tl.Name != "" && cl.Name != "" && tl.Name != cl.Name {
 		*changes = append(*changes, &Change{
 			info: fmt.Sprintf("Set name for label ID %s to: %s", cval(tl.Id), cval(tl.Name)),
-			// TODO: Set label name API
+			task: TaskSetLabelName{label: tl},
 		})
 	}
 	if tl.Color != "" && tl.Color != cl.Color {
 		*changes = append(*changes, &Change{
 			info: fmt.Sprintf("Set color for label ID %s to '%s'", cval(tl.Id), cval(tl.Color)),
-			// TODO: Set label color API
+			task: TaskSetLabelColor{label: tl},
 		})
 	}
 	if tl.Description != "" && tl.Description != cl.Description {
 		*changes = append(*changes, &Change{
 			info: fmt.Sprintf("Set description for label ID %s to '%s'", cval(tl.Id), cval(util.Short(tl.Description, 12))),
-			// TODO: Set label description API
+			task: TaskSetLabelDescription{label: tl},
 		})
 	}
 }
 
-func assetChanges(changes *[]*Change, purge bool, ca, ta *cli.AssetCli, cs, ts *cli.State, cMap map[string]*cli.Collector) {
+func assetChanges(changes *[]*Change, purge bool, ca, ta *cli.AssetCli, cs, ts *cli.State) {
 	if ta.Name != "" && ca.Name != "" && ta.Name != ca.Name {
 		*changes = append(*changes, &Change{
 			info: fmt.Sprintf("Set name for asset '%s' to: %s", cval(ta.Str()), cval(ta.Name)),
@@ -288,7 +313,7 @@ func assetChanges(changes *[]*Change, purge bool, ca, ta *cli.AssetCli, cs, ts *
 	}
 }
 
-func ensureCollectors(api, token string, cs, ts *cli.State, cMap map[string]*cli.Collector) []*Change {
+func ensureCollectors(ts *cli.State, cMap map[string]*cli.Collector) []*Change {
 	changes := []*Change{}
 
 	//
@@ -402,8 +427,9 @@ func ensureChanges(api, token string, purge bool, cs, ts *cli.State, cMap map[st
 			}
 			changes = append(changes, &Change{
 				info: fmt.Sprintf("Create new label: %s", cval(tl.Name)),
-				// TODO: Create new label API
+				task: TaskCreateLabel{label: tl},
 			})
+			readLabelChanges(&changes, &cli.DefaultLabel, tl)
 		} else {
 			// Label with ID
 			if cl := cs.LabelById(tl.Id); cl == nil {
@@ -450,13 +476,13 @@ func ensureChanges(api, token string, purge bool, cs, ts *cli.State, cMap map[st
 				info: fmt.Sprintf("Create new asset: %s", cval(ta.Name)),
 				task: TaskCreateAsset{asset: ta},
 			})
-			assetChanges(&changes, purge, &cli.DefaultAsset, ta, cs, ts, cMap)
+			assetChanges(&changes, purge, &cli.DefaultAsset, ta, cs, ts)
 		} else {
 			ca := cs.AssetById(ta.Id)
 			if ca == nil {
 				util.ExitErr("Asset ID %d not found in container '%s'.", ta.Id, cs.Container.Str())
 			}
-			assetChanges(&changes, purge, ca, ta, cs, ts, cMap)
+			assetChanges(&changes, purge, ca, ta, cs, ts)
 		}
 	}
 	return changes
@@ -744,7 +770,7 @@ func Apply(api, token, filename string, dryRun, purge bool) {
 		fmt.Println("Read collectors...")
 		util.ExitOnErr(updateCollectorMap(api, token, ts.Container.Id, &cMap))
 
-		changes := ensureCollectors(api, token, cs, ts, cMap)
+		changes := ensureCollectors(ts, cMap)
 		n := len(changes)
 		if n > 0 {
 			if dryRun {

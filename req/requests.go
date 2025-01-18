@@ -384,3 +384,71 @@ func RemoveCollectorFromAsset(api, token string, assetId int, collectorKey strin
 	}
 	return nil
 }
+
+func CreateLabel(api, token string, containerId int, name string) (int, error) {
+	uri := fmt.Sprintf("%s/container/%d/label", api, containerId)
+	type t struct {
+		Name string `json:"name"`
+	}
+	data := &t{
+		Name: name,
+	}
+	if body, err := httpJson("POST", uri, token, &data); err != nil {
+		return 0, fmt.Errorf("failed to upsert label '%s' (%s)", name, err)
+	} else {
+		type t struct {
+			LabelId int `json:"labelId"`
+		}
+		var data t
+		err := json.Unmarshal(body, &data)
+		if err != nil {
+			return 0, err
+		}
+		if data.LabelId == 0 {
+			return 0, fmt.Errorf("unexpected label ID 0 for label '%s'", name)
+		}
+		return data.LabelId, nil
+	}
+}
+
+func SetLabelColor(api, token string, labelId int, color string) error {
+	uri := fmt.Sprintf("%s/label/%d/color", api, labelId)
+	type t struct {
+		Color string `json:"color"`
+	}
+	data := &t{
+		Color: color,
+	}
+	if _, err := httpJson("PATCH", uri, token, &data); err != nil {
+		return fmt.Errorf("failed to set color '%s' for label ID %d' (%s)", color, labelId, err)
+	}
+	return nil
+}
+
+func SetLabelName(api, token string, labelId int, name string) error {
+	uri := fmt.Sprintf("%s/label/%d/name", api, labelId)
+	type t struct {
+		Name string `json:"name"`
+	}
+	data := &t{
+		Name: name,
+	}
+	if _, err := httpJson("PATCH", uri, token, &data); err != nil {
+		return fmt.Errorf("failed to set name '%s' for label ID %d' (%s)", name, labelId, err)
+	}
+	return nil
+}
+
+func SetLabelDescription(api, token string, labelId int, description string) error {
+	uri := fmt.Sprintf("%s/label/%d/description", api, labelId)
+	type t struct {
+		Description string `json:"description"`
+	}
+	data := &t{
+		Description: description,
+	}
+	if _, err := httpJson("PATCH", uri, token, &data); err != nil {
+		return fmt.Errorf("failed to change the description for label ID %d' (%s)", labelId, err)
+	}
+	return nil
+}

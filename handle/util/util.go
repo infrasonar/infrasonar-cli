@@ -67,11 +67,11 @@ func AskForConfirmation() bool {
 	}
 
 	okayResponses := []string{"y", "Y", "yes", "Yes", "YES"}
-	nokayResponses := []string{"n", "N", "no", "No", "NO"}
+	notOkayResponses := []string{"n", "N", "no", "No", "NO"}
 
 	if slices.Contains(okayResponses, response) {
 		return true
-	} else if slices.Contains(nokayResponses, response) {
+	} else if slices.Contains(notOkayResponses, response) {
 		return false
 	} else {
 		fmt.Println("Please type yes or no and then press enter:")

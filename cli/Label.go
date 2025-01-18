@@ -15,3 +15,12 @@ func (label *Label) Str() string {
 	}
 	return label.Name
 }
+
+var DefaultColor = "Steel"
+
+var DefaultLabel = Label{
+	Id:          0,
+	Name:        "",
+	Color:       DefaultColor,
+	Description: "",
+}

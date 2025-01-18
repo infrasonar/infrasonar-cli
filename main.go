@@ -25,7 +25,7 @@ func testTargetFilename(fn string) error {
 	if fn != "" {
 		fp, err := os.OpenFile(fn, os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
-			return fmt.Errorf("failed to create outpuf file: %s", err)
+			return fmt.Errorf("failed to create output file: %s", err)
 		}
 		fp.Close()
 	}
