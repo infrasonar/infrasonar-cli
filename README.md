@@ -33,5 +33,5 @@ infrasonar config new
 
 ### Build
 ```bash
-CGO_ENABLED=0 go build -o appliance-installer
+CGO_ENABLED=0 go build -o infrasonar
 ```
