@@ -4,8 +4,7 @@
 
 # InfraSonar Client
 
-1. Download the client
-**1. Download the latest installer:**
+**1. Download the latest version:**
 
 - [Linux (amd64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.0/infrasonar-cli-linux-amd64-1.0.0.tar.gz)
 - [Linux (arm64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.0/infrasonar-cli-linux-arm64-1.0.0.tar.gz)
@@ -37,11 +36,13 @@ infrasonar config new
 Next, give your configuration a name and provide a token
 
 ```
-Name: production
+Name: foo
 Token: ***********
 ```
 
-### Build
+### Build from source
+Clone this repository and make sure [Go](https://golang.google.cn) is installed.
+
 ```bash
 CGO_ENABLED=0 go build -o infrasonar
 ```
