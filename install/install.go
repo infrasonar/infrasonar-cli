@@ -72,6 +72,9 @@ func instalLinux() {
 			os.Exit(1)
 		}
 		defer o.Close()
-		o.WriteString(bashCompletion)
+		_, err = o.WriteString(bashCompletion)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Failed to write '%s': %s\n", fn, err)
+		}
 	}
 }
