@@ -163,10 +163,10 @@ func main() {
 		// CMD: config new
 		if cmdConfigNew.Happened() {
 			handle.ConfigNew(&handle.TConfigNew{
-				Name:   *cmdConfigNewSetName,
-				Token:  *cmdConfigNewSetToken,
-				Api:    *cmdConfigNewSetApi,
-				Output: *cmdConfigNewSetOutput,
+				Name:       *cmdConfigNewSetName,
+				Token:      *cmdConfigNewSetToken,
+				Api:        *cmdConfigNewSetApi,
+				Output:     *cmdConfigNewSetOutput,
 				SetDefault: *cmdConfigNewSetDefault,
 			})
 		}
@@ -200,11 +200,12 @@ func main() {
 		output := *cmdGetOutput
 		if outFn != "" {
 			o, err := cli.GetJsonOrYaml(outFn)
-			util.ExitOnErr(err)
-			if output == "" || o == output {
-				output = o
-			} else if output != "" {
-				util.ExitErr("output type does not match output file")
+			if err == nil {
+				if output == "" || o == output {
+					output = o
+				} else if output != "" {
+					util.ExitErr("output type does not match output file")
+				}
 			}
 		} else {
 			output = getOutput(output, config)
