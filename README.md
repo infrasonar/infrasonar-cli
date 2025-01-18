@@ -4,8 +4,7 @@
 
 # InfraSonar Client
 
-1. Download the client
-**1. Download the latest installer:**
+**1. Download the latest version:**
 
 - [Linux (amd64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.0/infrasonar-cli-linux-amd64-1.0.0.tar.gz)
 - [Linux (arm64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.0/infrasonar-cli-linux-arm64-1.0.0.tar.gz)
