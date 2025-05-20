@@ -101,7 +101,7 @@ func main() {
 	// CMD: get assets
 	cmdGetAssets := cmdGet.NewCommand("assets", "Get container assets")
 	cmdGetAssetsContainer := cmdGetAssets.Int("c", "container", options.Container)
-	cmdGetAssetsAsset := cmdGetAssets.Int("a", "asset", options.Container)
+	cmdGetAssetsAsset := cmdGetAssets.Int("a", "asset", options.Asset)
 	cmdGetAssetsProperties := cmdGetAssets.String("p", "properties", options.AssetProperties)
 	cmdGetAssetsFilter := cmdGetAssets.StringList("f", "filter", options.AssetFilter)
 	cmdGetAssetsIncludeDefaults := cmdGetAssets.Flag("i", "include-defaults", options.IncludeDefaults)
