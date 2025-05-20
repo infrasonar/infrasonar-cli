@@ -98,18 +98,18 @@ func getAssetsCli(assets []*cli.AssetApi, labelMap *cli.LabelMap) []*cli.AssetCl
 			Description:    a.Description,
 			Mode:           a.Mode,
 			Kind:           a.Kind,
-			DisabledChecks: &a.DisabledChecks,
 			Collectors:     &a.Collectors,
+			DisabledChecks: &a.DisabledChecks,
 			Properties:     &a.Properties,
 		}
 		if len(*asset.Labels) == 0 {
 			asset.Labels = nil
 		}
-		if len(*asset.DisabledChecks) == 0 {
-			asset.DisabledChecks = nil
-		}
 		if len(*asset.Collectors) == 0 {
 			asset.Collectors = nil
+		}
+		if len(*asset.DisabledChecks) == 0 {
+			asset.DisabledChecks = nil
 		}
 		if len(*asset.Properties) == 0 {
 			asset.Properties = nil

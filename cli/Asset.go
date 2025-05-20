@@ -26,8 +26,8 @@ type AssetApi struct {
 	Description    string            `json:"description"`
 	Mode           string            `json:"mode"`
 	Kind           string            `json:"kind"`
-	DisabledChecks []TDisabledChecks `json:"disabledChecks"`
 	Collectors     []TCollector      `json:"collectors"`
+	DisabledChecks []TDisabledChecks `json:"disabledChecks"`
 	Properties     []TProperty       `json:"properties"`
 }
 
@@ -39,8 +39,8 @@ type AssetCli struct {
 	Description    string             `json:"description,omitempty" yaml:"description,omitempty"`
 	Mode           string             `json:"mode,omitempty" yaml:"mode,omitempty"`
 	Kind           string             `json:"kind,omitempty" yaml:"kind,omitempty"`
-	DisabledChecks *[]TDisabledChecks `json:"disabledChecks,omitempty" yaml:"disabledChecks,omitempty"`
 	Collectors     *[]TCollector      `json:"collectors,omitempty" yaml:"collectors,omitempty"`
+	DisabledChecks *[]TDisabledChecks `json:"disabledChecks,omitempty" yaml:"disabledChecks,omitempty"`
 	Properties     *[]TProperty       `json:"properties,omitempty" yaml:"properties,omitempty"`
 }
 
@@ -72,6 +72,6 @@ var DefaultAsset = AssetCli{
 	Description:    "",
 	Mode:           "normal",
 	Kind:           "Asset",
-	DisabledChecks: &[]TDisabledChecks{},
 	Collectors:     &[]TCollector{},
+	DisabledChecks: &[]TDisabledChecks{},
 }

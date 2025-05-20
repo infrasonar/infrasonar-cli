@@ -217,23 +217,6 @@ func assetChanges(changes *[]*Change, purge bool, ca, ta *cli.AssetCli, cs, ts *
 			}
 		}
 	}
-	if ca.DisabledChecks != nil && ta.DisabledChecks != nil {
-		for _, disabledChk := range *ta.DisabledChecks {
-			found := false
-			for _, c := range *ca.DisabledChecks {
-				if c.Collector == disabledChk.Collector && c.Check == disabledChk.Check {
-					found = true
-					break
-				}
-			}
-			if !found {
-				*changes = append(*changes, &Change{
-					info: fmt.Sprintf("Disable collector check '%s/%s' on asset '%s'", cval(disabledChk.Collector), cval(disabledChk.Check), cval(ta.Str())),
-					task: TaskDisableAssetCheck{asset: ta, collectorKey: disabledChk.Collector, checkKey: disabledChk.Check},
-				})
-			}
-		}
-	}
 	if ca.Collectors != nil && ta.Collectors != nil {
 		for _, collector := range *ta.Collectors {
 			var other *cli.TCollector
@@ -259,6 +242,23 @@ func assetChanges(changes *[]*Change, purge bool, ca, ta *cli.AssetCli, cs, ts *
 						break
 					}
 				}
+			}
+		}
+	}
+	if ca.DisabledChecks != nil && ta.DisabledChecks != nil {
+		for _, disabledChk := range *ta.DisabledChecks {
+			found := false
+			for _, c := range *ca.DisabledChecks {
+				if c.Collector == disabledChk.Collector && c.Check == disabledChk.Check {
+					found = true
+					break
+				}
+			}
+			if !found {
+				*changes = append(*changes, &Change{
+					info: fmt.Sprintf("Disable collector check '%s/%s' on asset '%s'", cval(disabledChk.Collector), cval(disabledChk.Check), cval(ta.Str())),
+					task: TaskDisableAssetCheck{asset: ta, collectorKey: disabledChk.Collector, checkKey: disabledChk.Check},
+				})
 			}
 		}
 	}
