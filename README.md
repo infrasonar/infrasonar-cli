@@ -19,7 +19,7 @@ The InfraSonar client is a command-line application which can be used to manage 
 
 **2. Extract the contents of the archive using a tool like `tar`. Here's an example for Linux (amd64):**
 ```bash
-tar -xzvf infrasonar-cli-linux-amd64-1.0.1.tar.gz
+tar -xzvf infrasonar-linux-amd64-1.0.1.tar.gz
 ```
 
 2. Install
