@@ -357,7 +357,7 @@ func EnableAssetCheck(api, token string, assetId int, collectorKey, checkKey str
 
 func DisableAssetCheck(api, token string, assetId int, collectorKey, checkKey string) error {
 	uri := fmt.Sprintf("%s/asset/%d/collector/%s/check/%s", api, assetId, collectorKey, checkKey)
-	if _, err := httpAuth("PUT", uri, token); err != nil {
+	if _, err := httpAuth("DELETE", uri, token); err != nil {
 		return fmt.Errorf("failed to enable check %s/%s on asset ID %d (%s)", collectorKey, checkKey, assetId, err)
 	}
 	return nil
