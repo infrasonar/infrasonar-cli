@@ -8,12 +8,12 @@ The InfraSonar client is a command-line application which can be used to manage 
 
 **1. Download the latest version:**
 
-- [Linux (amd64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.1/infrasonar-cli-linux-amd64-1.0.1.tar.gz)
-- [Linux (arm64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.1/infrasonar-cli-linux-arm64-1.0.1.tar.gz)
-- [Darwin (amd64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.1/infrasonar-cli-darwin-amd64-1.0.1.tar.gz)
-- [Darwin (arm64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.1/infrasonar-cli-darwin-arm64-1.0.1.tar.gz)
-- [Windows (amd64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.1/infrasonar-cli-windows-amd64-1.0.1.zip)
-- [Windows (arm64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.1/infrasonar-cli-windows-arm64-1.0.1.zip)
+- [Linux (amd64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.1/infrasonar-linux-amd64-1.0.1.tar.gz)
+- [Linux (arm64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.1/infrasonar-linux-arm64-1.0.1.tar.gz)
+- [Darwin (amd64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.1/infrasonar-darwin-amd64-1.0.1.tar.gz)
+- [Darwin (arm64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.1/infrasonar-darwin-arm64-1.0.1.tar.gz)
+- [Windows (amd64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.1/infrasonar-windows-amd64-1.0.1.zip)
+- [Windows (arm64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.1/infrasonar-windows-arm64-1.0.1.zip)
 
 > If your platform is not listed above, refer to the [build from source](#build-from-source) section for instructions.
 
