@@ -55,7 +55,7 @@ func StateFromCache(containerId int) *State {
 	if err != nil {
 		return nil
 	}
-	fn := path.Join(cliPath, fmt.Sprintf("cache_%09d.yaml", containerId))
+	fn := path.Join(cliPath, fmt.Sprintf("cache_%09d.json", containerId))
 	state, _ := StateFromFile(fn)
 	return state
 }
@@ -65,7 +65,7 @@ func (s *State) ClearCache() {
 	if err != nil {
 		return
 	}
-	fn := path.Join(cliPath, fmt.Sprintf("cache_%09d.yaml", s.Container.Id))
+	fn := path.Join(cliPath, fmt.Sprintf("cache_%09d.json", s.Container.Id))
 	os.Remove(fn)
 }
 
@@ -129,7 +129,7 @@ func (s *State) WriteCache() {
 	if err != nil {
 		return
 	}
-	fn := path.Join(cliPath, fmt.Sprintf("cache_%09d.yaml", s.Container.Id))
+	fn := path.Join(cliPath, fmt.Sprintf("cache_%09d.json", s.Container.Id))
 	fp, err := os.OpenFile(fn, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return

@@ -205,7 +205,7 @@ func assetChanges(changes *[]*Change, purge bool, ca, ta *cli.AssetCli, cs, ts *
 			task: TaskSetAssetDescription{asset: ta},
 		})
 	}
-	if ca.Labels != nil && ta.Labels != nil {
+	if ta.Labels != nil {
 		for _, key := range *ta.Labels {
 			if label := ts.LabelByKey(key); label != nil {
 				if !ca.HasLabelId(label.Id, cs.GetLabelMap()) {
@@ -217,15 +217,19 @@ func assetChanges(changes *[]*Change, purge bool, ca, ta *cli.AssetCli, cs, ts *
 			}
 		}
 	}
-	if ca.Collectors != nil && ta.Collectors != nil {
+	if ta.Collectors != nil {
 		for _, collector := range *ta.Collectors {
 			var other *cli.TCollector
-			for _, c := range *ca.Collectors {
-				if c.Key == collector.Key {
-					other = &c
-					break
+
+			if ca.Collectors != nil {
+				for _, c := range *ca.Collectors {
+					if c.Key == collector.Key {
+						other = &c
+						break
+					}
 				}
 			}
+
 			if other == nil {
 				*changes = append(*changes, &Change{
 					info: fmt.Sprintf("Add collector '%s' to asset '%s'", cval(collector.Key), cval(ta.Str())),
@@ -245,13 +249,15 @@ func assetChanges(changes *[]*Change, purge bool, ca, ta *cli.AssetCli, cs, ts *
 			}
 		}
 	}
-	if ca.DisabledChecks != nil && ta.DisabledChecks != nil {
+	if ta.DisabledChecks != nil {
 		for _, disabledChk := range *ta.DisabledChecks {
 			found := false
-			for _, c := range *ca.DisabledChecks {
-				if c.Collector == disabledChk.Collector && c.Check == disabledChk.Check {
-					found = true
-					break
+			if ca.DisabledChecks != nil {
+				for _, c := range *ca.DisabledChecks {
+					if c.Collector == disabledChk.Collector && c.Check == disabledChk.Check {
+						found = true
+						break
+					}
 				}
 			}
 			if !found {
