@@ -22,20 +22,21 @@ The InfraSonar client is a command-line application which can be used to manage 
 tar -xzvf infrasonar-linux-amd64-1.0.2.tar.gz
 ```
 
-2. Install
+**3. Install:**
+
 The following command will install infrasonar in path and enables bash completion if supported by the OS.
 
 ```bash
 sudo ./infrasonar install
 ```
 
-3. Create a new configuration
+**4. Create a new configuration:**
 
 ```bash
 infrasonar config new
 ```
 
-Next, give your configuration a name and provide a token
+Finally, give your configuration a name and provide a token
 
 ```
 Name: foo
