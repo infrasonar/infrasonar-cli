@@ -30,6 +30,18 @@ The following command will install infrasonar in path and enables bash completio
 sudo ./infrasonar install
 ```
 
+Mac OS specific.
+If you get the error message:
+> Apple could not verify “infrasonar” is free of malware that may harm your Mac or compromise your privacy.
+
+Ensure you downloaded the binary from a trusted source (https://github.com/infrasonar/infrasonar-cli/)
+
+Manually remove the "quarantine" flag that macOS attaches to the file. Open your Terminal and run:
+
+```bash
+xattr -d com.apple.quarantine ./infrasonar
+```
+
 **4. Create a new configuration:**
 
 ```bash
