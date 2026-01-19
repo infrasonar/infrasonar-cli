@@ -8,18 +8,18 @@ The InfraSonar client is a command-line application which can be used to manage 
 
 **1. Download the latest version:**
 
-- [Linux (amd64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.2/infrasonar-linux-amd64-1.0.2.tar.gz)
-- [Linux (arm64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.2/infrasonar-linux-arm64-1.0.2.tar.gz)
-- [Darwin (amd64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.2/infrasonar-darwin-amd64-1.0.2.tar.gz)
-- [Darwin (arm64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.2/infrasonar-darwin-arm64-1.0.2.tar.gz)
-- [Windows (amd64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.2/infrasonar-windows-amd64-1.0.2.zip)
-- [Windows (arm64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.2/infrasonar-windows-arm64-1.0.2.zip)
+- [Linux (amd64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.3/infrasonar-linux-amd64-1.0.3.tar.gz)
+- [Linux (arm64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.3/infrasonar-linux-arm64-1.0.3.tar.gz)
+- [Darwin (amd64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.3/infrasonar-darwin-amd64-1.0.3.tar.gz)
+- [Darwin (arm64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.3/infrasonar-darwin-arm64-1.0.3.tar.gz)
+- [Windows (amd64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.3/infrasonar-windows-amd64-1.0.3.zip)
+- [Windows (arm64)](https://github.com/infrasonar/infrasonar-cli/releases/download/v1.0.3/infrasonar-windows-arm64-1.0.3.zip)
 
 > If your platform is not listed above, refer to the [build from source](#build-from-source) section for instructions.
 
 **2. Extract the contents of the archive using a tool like `tar`. Here's an example for Linux (amd64):**
 ```bash
-tar -xzvf infrasonar-linux-amd64-1.0.2.tar.gz
+tar -xzvf infrasonar-linux-amd64-1.0.3.tar.gz
 ```
 
 **3. Install:**
@@ -30,7 +30,8 @@ The following command will install infrasonar in path and enables bash completio
 sudo ./infrasonar install
 ```
 
-Mac OS specific.
+**Mac OS specific:**
+
 If you get the error message:
 > Apple could not verify “infrasonar” is free of malware that may harm your Mac or compromise your privacy.
 

@@ -177,19 +177,19 @@ func readLabelChanges(changes *[]*Change, cl, tl *cli.Label) {
 func assetChanges(changes *[]*Change, purge bool, ca, ta *cli.AssetCli, cs, ts *cli.State) {
 	if ta.Name != "" && ca.Name != "" && ta.Name != ca.Name {
 		*changes = append(*changes, &Change{
-			info: fmt.Sprintf("Set name for asset '%s' to: %s", cval(ta.Str()), cval(ta.Name)),
+			info: fmt.Sprintf("Set name for asset '%s' to: '%s'", cval(ta.Str()), cval(ta.Name)),
 			task: TaskSetAssetName{asset: ta},
 		})
 	}
 	if ta.Mode != "" && ta.Mode != ca.Mode {
 		*changes = append(*changes, &Change{
-			info: fmt.Sprintf("Set mode for asset '%s' to: %s", cval(ta.Str()), cval(ta.Mode)),
+			info: fmt.Sprintf("Set mode for asset '%s' to: '%s'", cval(ta.Str()), cval(ta.Mode)),
 			task: TaskSetAssetMode{asset: ta},
 		})
 	}
 	if ta.Kind != "" && ta.Kind != ca.Kind {
 		*changes = append(*changes, &Change{
-			info: fmt.Sprintf("Set kind for asset '%s' to: %s", cval(ta.Str()), cval(ta.Kind)),
+			info: fmt.Sprintf("Set kind for asset '%s' to: '%s'", cval(ta.Str()), cval(ta.Kind)),
 			task: TaskSetAssetKind{asset: ta},
 		})
 	}
@@ -201,7 +201,7 @@ func assetChanges(changes *[]*Change, purge bool, ca, ta *cli.AssetCli, cs, ts *
 	}
 	if ta.Description != "" && ta.Description != ca.Description {
 		*changes = append(*changes, &Change{
-			info: fmt.Sprintf("Set description for asset '%s' to: %s", cval(ta.Str()), cval(util.Short(ta.Description, 12))),
+			info: fmt.Sprintf("Set description for asset '%s' to: '%s'", cval(ta.Str()), cval(util.Short(ta.Description, 12))),
 			task: TaskSetAssetDescription{asset: ta},
 		})
 	}
