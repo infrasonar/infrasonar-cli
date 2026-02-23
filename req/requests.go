@@ -355,7 +355,7 @@ func VerifyCollectorConfig(api, token, collectorKey string, config map[string]an
 	data := &t{
 		Config: config,
 	}
-	_, err := httpJson("POST", uri, token, &data)
+	_, err := httpJsonMore("POST", uri, token, &data, false)
 	return err
 }
 
