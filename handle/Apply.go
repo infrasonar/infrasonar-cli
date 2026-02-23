@@ -606,7 +606,7 @@ func sanityCheckCollectorConfig(ts *cli.State, cMap map[string]*cli.Collector, a
 			if remoteValidation {
 				err := req.VerifyCollectorConfig(api, token, collector.Key, sanitizeConfig(collector.Config))
 				if err != nil {
-					util.ExitErr("Collector '%s' on asset '%s' error: %s", collector.Key, asset.Str(), err)
+					util.ExitErr("Collector '%s' on asset '%s': %s", collector.Key, asset.Str(), err)
 				}
 			}
 		}
