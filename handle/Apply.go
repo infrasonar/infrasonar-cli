@@ -822,8 +822,10 @@ func Apply(api, token, filename string, dryRun, purge bool) {
 
 		util.Color("Perform remote configuration check? (Local check is faster, remote is more thorough) (yes/no): ")
 		remoteValidation := util.AskForConfirmation()
+		if remoteValidation {
+			fmt.Println("Checking configs remotely... (this may take a moment)")
+		}
 		fmt.Println("")
-
 		sanityCheckCollectorConfig(ts, cMap, api, token, remoteValidation)
 	}
 
