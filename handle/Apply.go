@@ -509,7 +509,19 @@ func getCacheState(containerId int) *cli.State {
 	return nil
 }
 
-func sanityCheckCollectorConfig(ts *cli.State, cMap map[string]*cli.Collector) {
+func sanitizeConfig(input map[string]any) map[string]any {
+	clone := make(map[string]any)
+	for k, v := range input {
+		if k == "password" || k == "secret" {
+			clone[k] = "xxx"
+			continue
+		}
+		clone[k] = v
+	}
+	return clone
+}
+
+func sanityCheckCollectorConfig(ts *cli.State, cMap map[string]*cli.Collector, api, token string, remoteValidation bool) {
 	for _, asset := range ts.Assets {
 		if asset.Collectors == nil {
 			continue
@@ -589,6 +601,12 @@ func sanityCheckCollectorConfig(ts *cli.State, cMap map[string]*cli.Collector) {
 					if !found {
 						util.ExitErr("Collector '%s' on asset '%s' contains an unknown configuration property '%s'.", collector.Key, asset.Str(), k)
 					}
+				}
+			}
+			if remoteValidation {
+				err := req.VerifyCollectorConfig(api, token, collector.Key, sanitizeConfig(collector.Config))
+				if err != nil {
+					util.ExitErr("Collector '%s' on asset '%s' error: %s", collector.Key, asset.Str(), err)
 				}
 			}
 		}
@@ -782,7 +800,7 @@ func Apply(api, token, filename string, dryRun, purge bool) {
 			if dryRun {
 				util.Color("To run a more accurate dry run, %d collector%s need to be enabled. Proceed? (yes/no): ", n, util.Plural(n))
 			} else {
-				util.Color("To continue, %d collector%s must be enabled. Proceed? (yes/no):", n, util.Plural(n))
+				util.Color("To continue, %d collector%s must be enabled. Proceed? (yes/no): ", n, util.Plural(n))
 			}
 			if util.AskForConfirmation() {
 				ts.ClearCache() // Clear the cache as we're about to make changes
@@ -801,7 +819,12 @@ func Apply(api, token, filename string, dryRun, purge bool) {
 
 		ensureNumbersAndDefaults(cs.Assets, cMap)
 		ensureNumbersAndDefaults(ts.Assets, cMap)
-		sanityCheckCollectorConfig(ts, cMap)
+
+		util.Color("Perform remote configuration check? (Local check is faster, remote is more thorough) (yes/no): ")
+		remoteValidation := util.AskForConfirmation()
+		fmt.Println("")
+
+		sanityCheckCollectorConfig(ts, cMap, api, token, remoteValidation)
 	}
 
 	changes := ensureChanges(api, token, purge, cs, ts, cMap)
