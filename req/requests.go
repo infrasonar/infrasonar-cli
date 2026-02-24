@@ -347,6 +347,18 @@ func DeleteLabelFromAsset(api, token string, assetId, labelId int) error {
 	return nil
 }
 
+func VerifyCollectorConfig(api, token, collectorKey string, config map[string]any) error {
+	uri := fmt.Sprintf("%s/collector/%s", api, collectorKey)
+	type t struct {
+		Config any `json:"config"`
+	}
+	data := &t{
+		Config: config,
+	}
+	_, err := httpJsonMore("POST", uri, token, &data, false)
+	return err
+}
+
 func EnableAssetCheck(api, token string, assetId int, collectorKey, checkKey string) error {
 	uri := fmt.Sprintf("%s/asset/%d/collector/%s/check/%s", api, assetId, collectorKey, checkKey)
 	if _, err := httpAuth("PUT", uri, token); err != nil {

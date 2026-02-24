@@ -24,7 +24,7 @@ func httpGet(url string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("request failed: %s", err)
 	}
-	if err := errForResponse(resp); err != nil {
+	if err := errForResponse(resp, true); err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -45,14 +45,14 @@ func httpAuth(method, url, token string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("request failed: %s", err)
 	}
-	if err := errForResponse(resp); err != nil {
+	if err := errForResponse(resp, true); err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 	return io.ReadAll(resp.Body)
 }
 
-func httpJson(method, url, token string, data any) ([]byte, error) {
+func httpJsonMore(method, url, token string, data any, detail bool) ([]byte, error) {
 	body, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
@@ -72,14 +72,18 @@ func httpJson(method, url, token string, data any) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("request failed: %s", err)
 	}
-	if err := errForResponse(resp); err != nil {
+	if err := errForResponse(resp, detail); err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 	return io.ReadAll(resp.Body)
 }
 
-func errForResponse(resp *http.Response) error {
+func httpJson(method, url, token string, data any) ([]byte, error) {
+	return httpJsonMore(method, url, token, data, true)
+}
+
+func errForResponse(resp *http.Response, detail bool) error {
 	if resp.StatusCode/100 == 2 {
 		return nil
 	}
@@ -89,5 +93,8 @@ func errForResponse(resp *http.Response) error {
 		return errors.New(resp.Status)
 	}
 	bodyString := string(body)
-	return fmt.Errorf("%s Response: %s", resp.Status, bodyString)
+	if detail {
+		return fmt.Errorf("%s Response: %s", resp.Status, bodyString)
+	}
+	return errors.New(bodyString)
 }
