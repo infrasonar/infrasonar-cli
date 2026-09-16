@@ -776,6 +776,7 @@ func Apply(api, token, filename string, dryRun, purge bool) {
 			Properties:      cli.AssetProperties,
 			Filters:         []string{},
 			IncludeDefaults: true,
+			FilterZones:     false,
 		})
 		cs.WriteCache()
 	}

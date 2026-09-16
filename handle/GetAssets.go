@@ -18,6 +18,7 @@ type TGetAssets struct {
 	Properties      []string
 	Filters         []string
 	IncludeDefaults bool
+	FilterZones     bool
 }
 
 func getCollector(collectors []*cli.Collector, key string) *cli.Collector {
@@ -64,13 +65,15 @@ func replaceUseAndFilterZones(assets []*cli.AssetApi, zones *[]*cli.Zone) {
 			zmap.Set(*asset.Zone)
 		}
 	}
-	newZones := []*cli.Zone{}
-	for _, zone := range *zones {
-		if zmap.Has(zone.Zone) {
-			newZones = append(newZones, zone)
+	if zones != nil {
+		newZones := []*cli.Zone{}
+		for _, zone := range *zones {
+			if zmap.Has(zone.Zone) {
+				newZones = append(newZones, zone)
+			}
 		}
+		*zones = newZones
 	}
-	*zones = newZones
 }
 
 func getLabelMap(api, token string, assets []*cli.AssetApi) (*cli.LabelMap, error) {
@@ -142,7 +145,11 @@ func ensureState(cmd *TGetAssets) *cli.State {
 		removeDefaults(assets, collectors)
 	}
 
-	replaceUseAndFilterZones(assets, &zones)
+	if cmd.FilterZones {
+		replaceUseAndFilterZones(assets, &zones)
+	} else {
+		replaceUseAndFilterZones(assets, nil)
+	}
 
 	util.Log(cmd.OutFn, "Get labels...")
 	labelMap, err := getLabelMap(cmd.Api, cmd.Token, assets)

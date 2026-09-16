@@ -225,6 +225,7 @@ func main() {
 				Properties:      getAssetProperties(*cmdGetAssetsProperties),
 				Filters:         *cmdGetAssetsFilter,
 				IncludeDefaults: *cmdGetAssetsIncludeDefaults,
+				FilterZones:     true,
 			})
 		}
 
