@@ -30,13 +30,17 @@ func copyBinFile(in, out string) error {
 	if e != nil {
 		return e
 	}
-	defer i.Close()
+	defer func() {
+		_ = i.Close()
+	}()
 
 	o, e := os.OpenFile(out, os.O_CREATE|os.O_WRONLY, 0755)
 	if e != nil {
 		return e
 	}
-	defer o.Close()
+	defer func() {
+		_ = o.Close()
+	}()
 
 	_, err := o.ReadFrom(i)
 	return err
@@ -71,7 +75,9 @@ func instalLinux() {
 			fmt.Fprintf(os.Stderr, "Failed to create '%s': %s\n", fn, err)
 			os.Exit(1)
 		}
-		defer o.Close()
+		defer func() {
+			_ = o.Close()
+		}()
 		_, err = o.WriteString(bashCompletion)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to write '%s': %s\n", fn, err)

@@ -27,7 +27,9 @@ func httpGet(url string) ([]byte, error) {
 	if err := errForResponse(resp, true); err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 	return io.ReadAll(resp.Body)
 }
 
@@ -48,7 +50,9 @@ func httpAuth(method, url, token string) ([]byte, error) {
 	if err := errForResponse(resp, true); err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 	return io.ReadAll(resp.Body)
 }
 
@@ -75,7 +79,9 @@ func httpJsonMore(method, url, token string, data any, detail bool) ([]byte, err
 	if err := errForResponse(resp, detail); err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 	return io.ReadAll(resp.Body)
 }
 
@@ -87,7 +93,9 @@ func errForResponse(resp *http.Response, detail bool) error {
 	if resp.StatusCode/100 == 2 {
 		return nil
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return errors.New(resp.Status)

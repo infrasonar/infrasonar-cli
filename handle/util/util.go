@@ -130,17 +130,19 @@ func ExitOutput(out any, output string, outFn string) {
 			os.Exit(1)
 		}
 		fp = fo
-		defer fp.Close()
+		defer func() {
+			_ = fp.Close()
+		}()
 	}
 	switch output {
 	case "yaml":
 		out, err := yaml.Marshal(&out)
 		ExitOnErr(err)
-		fmt.Fprintln(fp, string(out[:]))
+		_, _ = fmt.Fprintln(fp, string(out[:]))
 	case "json":
 		out, err := json.Marshal(out)
 		ExitOnErr(err)
-		fmt.Fprintln(fp, string(out[:]))
+		_, _ = fmt.Fprintln(fp, string(out[:]))
 	case "simple":
 		if v, ok := out.(Simple); ok {
 			out = v.Out()
@@ -149,24 +151,24 @@ func ExitOutput(out any, output string, outFn string) {
 		switch x := out.(type) {
 		case []string:
 			for _, i := range x {
-				fmt.Fprintln(fp, i)
+				_, _ = fmt.Fprintln(fp, i)
 			}
 		case []int:
 			for _, i := range x {
-				fmt.Fprintln(fp, i)
+				_, _ = fmt.Fprintln(fp, i)
 			}
 		case []float32:
 			for _, i := range x {
-				fmt.Fprintln(fp, i)
+				_, _ = fmt.Fprintln(fp, i)
 			}
 		case []float64:
 			for _, i := range x {
-				fmt.Fprintln(fp, i)
+				_, _ = fmt.Fprintln(fp, i)
 			}
 		case string, int, bool, float32, float64:
-			fmt.Fprintln(fp, out)
+			_, _ = fmt.Fprintln(fp, out)
 		default:
-			fmt.Fprintln(os.Stderr, "output 'simple' not possible, try -o yaml or -o json")
+			_, _ = fmt.Fprintln(os.Stderr, "output 'simple' not possible, try -o yaml or -o json")
 			os.Exit(1)
 		}
 	default:

@@ -66,7 +66,7 @@ func (s *State) ClearCache() {
 		return
 	}
 	fn := path.Join(cliPath, fmt.Sprintf("cache_%09d.json", s.Container.Id))
-	os.Remove(fn)
+	_ = os.Remove(fn)
 }
 
 func (s *State) makeLabelMap() {
@@ -134,10 +134,12 @@ func (s *State) WriteCache() {
 	if err != nil {
 		return
 	}
-	defer fp.Close()
+	defer func() {
+		_ = fp.Close()
+	}()
 
 	if out, err := json.Marshal(s); err == nil {
-		fmt.Fprintln(fp, string(out[:]))
+		_, _ = fmt.Fprintln(fp, string(out[:]))
 	}
 }
 

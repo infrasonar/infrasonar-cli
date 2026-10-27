@@ -27,7 +27,7 @@ func testTargetFilename(fn string) error {
 		if err != nil {
 			return fmt.Errorf("failed to create output file: %s", err)
 		}
-		fp.Close()
+		_ = fp.Close()
 	}
 	return nil
 }
