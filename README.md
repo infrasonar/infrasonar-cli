@@ -62,3 +62,12 @@ Clone this repository and make sure [Go](https://golang.google.cn) is installed.
 ```bash
 CGO_ENABLED=0 go build -o infrasonar
 ```
+
+### Update packages
+
+GO Packages:
+
+```bash
+go get -u ./...
+go mod tidy
+```
