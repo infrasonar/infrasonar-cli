@@ -73,7 +73,7 @@ var DefaultAsset = AssetCli{
 	Zone:           &DefaultZone,
 	Labels:         &[]string{},
 	Description:    "",
-	Mode:           "normal",
+	Mode:           "Normal",
 	Kind:           "Asset",
 	Collectors:     &[]TCollector{},
 	DisabledChecks: &[]TDisabledChecks{},

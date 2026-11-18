@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/akamensky/argparse"
 	"github.com/infrasonar/infrasonar-cli/cli"
@@ -200,8 +201,8 @@ var AssetFilter = &argparse.Options{
 			// Check for valid filters
 			switch m[1] {
 			case "mode":
-				if util.InSlice([]string{"normal", "maintenance", "disabled"}, m[3]) == nil {
-					return fmt.Errorf("unknown mode '%s'. {normal,maintenance,disabled}", m[3])
+				if util.InSlice([]string{"normal", "maintenance", "disabled"}, strings.ToLower(m[3])) == nil {
+					return fmt.Errorf("unknown mode '%s'. {Normal,Maintenance,Disabled}", m[3])
 				}
 				continue
 			case "collector", "kind":
