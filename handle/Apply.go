@@ -3,6 +3,7 @@ package handle
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/fatih/color"
@@ -391,11 +392,11 @@ func ensureChanges(api, token string, purge bool, cs, ts *cli.State, cMap map[st
 				}
 			}
 		}
-		switch ta.Mode {
+		switch strings.ToLower(ta.Mode) {
 		case "", "normal", "maintenance", "disabled":
 			continue
 		}
-		util.ExitErr("Asset '%s' has an invalid mode '%s'. Must be one of {normal,maintenance,disabled}", ta.Str(), ta.Mode)
+		util.ExitErr("Asset '%s' has an invalid mode '%s'. Must be one of {Normal,Maintenance,Disabled}", ta.Str(), ta.Mode)
 	}
 
 	//
